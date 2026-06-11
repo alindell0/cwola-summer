@@ -1,6 +1,8 @@
 # cwola-summer project
 .venv/
 .fits
+.npy
+.h5
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
