@@ -68,7 +68,7 @@ patch_list = [
 gd1 = np.load('./../gaia-data/gd1/gd1_stars.npy')
 
 # clean file columns, cross-check as GD-1, save as hdf5 files
-for patch_id in range(len(patch_list)):
+for patch_id in range(2):
     file = patch_list[patch_id]
 
     colnames = ["pmdec", "pmra", "dec", "ra", "b-r", "g", 
@@ -80,4 +80,4 @@ for patch_id in range(len(patch_list)):
     df['stream'] = bool_stream
 
     df.to_hdf(f'../gaia-data/cleaned-data/df_patch{patch_id}.h5', key=f'data', mode='w')
-
+    print(f'Patch {patch_id} cleaned and saved.')
