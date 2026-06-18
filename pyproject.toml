@@ -9,6 +9,7 @@ dependencies = [
     "matplotlib>=3.3.4",
     "numpy>=1.19.5",
     "pandas>=0.25.3",
+    "tables>=3.7.0",
     "tensorflow>=2.7.4",
     "tqdm>=4.64.1",
 ]

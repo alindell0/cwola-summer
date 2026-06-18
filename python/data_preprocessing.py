@@ -68,7 +68,7 @@ patch_list = [
 gd1 = np.load('./../gaia-data/gd1/gd1_stars.npy')
 
 # clean file columns, cross-check as GD-1, save as hdf5 files
-for patch_id in range(2):
+for patch_id in range(len(patch_list)):
     file = patch_list[patch_id]
 
     colnames = ["pmdec", "pmra", "dec", "ra", "b-r", "g", 
