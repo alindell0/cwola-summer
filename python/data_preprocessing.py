@@ -38,31 +38,31 @@ def FilterGD1(stars, gd1_stars):
 # 21 GD-1 inclusive patches from doi.org/10.5281/zenodo.7897935
 patch_list = [
      # b = 33.7 
-     './../gaia_data/raw-data/gaiascan_l195.0_b33.7_ra128.4_dec28.8.npy',
-     './../gaia_data/raw-data/gaiascan_l210.0_b33.7_ra132.6_dec16.9.npy',
-     './../gaia_data/raw-data/gaiascan_l225.0_b33.7_ra138.1_dec5.7.npy', 
+     '../gaia-data/raw-data/gaiascan_l195.0_b33.7_ra128.4_dec28.8.npy',
+     '../gaia-data/raw-data/gaiascan_l210.0_b33.7_ra132.6_dec16.9.npy',
+     '../gaia-data/raw-data/gaiascan_l225.0_b33.7_ra138.1_dec5.7.npy', 
      # b = 41.8 
-     './../gaia_data/raw-data/gaiascan_l187.5_b41.8_ra136.5_dec36.1.npy',
-     './../gaia_data/raw-data/gaiascan_l202.5_b41.8_ra138.8_dec25.1.npy',
-     './../gaia_data/raw-data/gaiascan_l217.5_b41.8_ra142.7_dec14.5.npy', 
+     '../gaia-data/raw-data/gaiascan_l187.5_b41.8_ra136.5_dec36.1.npy',
+     '../gaia-data/raw-data/gaiascan_l202.5_b41.8_ra138.8_dec25.1.npy',
+     '../gaia-data/raw-data/gaiascan_l217.5_b41.8_ra142.7_dec14.5.npy', 
      # b = 50.2 
-     './../gaia_data/raw-data/gaiascan_l99.0_b50.2_ra224.7_dec60.6.npy',
-     './../gaia_data/raw-data/gaiascan_l117.0_b50.2_ra202.4_dec66.5.npy',
-     './../gaia_data/raw-data/gaiascan_l135.0_b50.2_ra174.3_dec65.1.npy',
-     './../gaia_data/raw-data/gaiascan_l153.0_b50.2_ra156.2_dec57.5.npy',
-     './../gaia_data/raw-data/gaiascan_l171.0_b50.2_ra148.6_dec47.0.npy',
-     './../gaia_data/raw-data/gaiascan_l189.0_b50.2_ra146.9_dec35.6.npy',
-     './../gaia_data/raw-data/gaiascan_l207.0_b50.2_ra148.6_dec24.2.npy',
+     '../gaia-data/raw-data/gaiascan_l99.0_b50.2_ra224.7_dec60.6.npy',
+     '../gaia-data/raw-data/gaiascan_l117.0_b50.2_ra202.4_dec66.5.npy',
+     '../gaia-data/raw-data/gaiascan_l135.0_b50.2_ra174.3_dec65.1.npy',
+     '../gaia-data/raw-data/gaiascan_l153.0_b50.2_ra156.2_dec57.5.npy',
+     '../gaia-data/raw-data/gaiascan_l171.0_b50.2_ra148.6_dec47.0.npy',
+     '../gaia-data/raw-data/gaiascan_l189.0_b50.2_ra146.9_dec35.6.npy',
+     '../gaia-data/raw-data/gaiascan_l207.0_b50.2_ra148.6_dec24.2.npy',
      # b = 58.4 
-     './../gaia_data/raw-data/gaiascan_l101.2_b58.4_ra212.7_dec55.2.npy',
-     './../gaia_data/raw-data/gaiascan_l123.8_b58.4_ra192.0_dec58.7.npy',
-     './../gaia_data/raw-data/gaiascan_l146.2_b58.4_ra171.8_dec54.7.npy',
-     './../gaia_data/raw-data/gaiascan_l168.8_b58.4_ra160.5_dec45.5.npy',
-     './../gaia_data/raw-data/gaiascan_l191.2_b58.4_ra156.9_dec34.1.npy',
+     '../gaia-data/raw-data/gaiascan_l101.2_b58.4_ra212.7_dec55.2.npy',
+     '../gaia-data/raw-data/gaiascan_l123.8_b58.4_ra192.0_dec58.7.npy',
+     '../gaia-data/raw-data/gaiascan_l146.2_b58.4_ra171.8_dec54.7.npy',
+     '../gaia-data/raw-data/gaiascan_l168.8_b58.4_ra160.5_dec45.5.npy',
+     '../gaia-data/raw-data/gaiascan_l191.2_b58.4_ra156.9_dec34.1.npy',
      # b = 66.4 
-     './../gaia_data/raw-data/gaiascan_l105.0_b66.4_ra203.7_dec49.1.npy',
-     './../gaia_data/raw-data/gaiascan_l135.0_b66.4_ra185.4_dec50.0.npy',
-     './../gaia_data/raw-data/gaiascan_l165.0_b66.4_ra171.4_dec43.0.npy',    
+     '../gaia-data/raw-data/gaiascan_l105.0_b66.4_ra203.7_dec49.1.npy',
+     '../gaia-data/raw-data/gaiascan_l135.0_b66.4_ra185.4_dec50.0.npy',
+     '../gaia-data/raw-data/gaiascan_l165.0_b66.4_ra171.4_dec43.0.npy',    
     ]
 
 gd1 = np.load('./../gaia-data/gd1/gd1_stars.npy')
@@ -79,9 +79,5 @@ for patch_id in range(len(patch_list)):
     bool_stream, stream = FilterGD1(np.array(df), gd1)
     df['stream'] = bool_stream
 
-    df.to_hdf(f'../gaia-data/cleaned-data/df_patch{patch_id}.h5', key=f'df_patch_{patch_id}', mode='w')
-
-
-
-
+    df.to_hdf(f'../gaia-data/cleaned-data/df_patch{patch_id}.h5', key=f'data', mode='w')
 

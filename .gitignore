@@ -3,6 +3,7 @@
 .fits
 .npy
 .h5
+gaia-data/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
