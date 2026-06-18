@@ -5,8 +5,10 @@ requires-python = ">=3.6"
 dependencies = [
     "astropy>=4.1",
     "h5py>=3.1.0",
+    "keras>=2.7.0",
     "matplotlib>=3.3.4",
     "numpy>=1.19.5",
     "pandas>=0.25.3",
+    "tensorflow>=2.7.4",
     "tqdm>=4.64.1",
 ]
