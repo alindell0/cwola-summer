@@ -81,3 +81,4 @@ for patch_id in range(len(patch_list)):
 
     df.to_hdf(f'../gaia-data/cleaned-data/df_patch{patch_id}.h5', key=f'data', mode='w')
     print(f'Patch {patch_id} cleaned and saved.')
+
