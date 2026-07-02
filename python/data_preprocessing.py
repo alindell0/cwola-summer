@@ -17,6 +17,7 @@ def angular_distance(angle1,angle2): # via_machinae function https://arxiv.org/a
                                   np.abs(angle1[:,0]-angle2[:,0]-360))
     deltadec=np.abs(angle1[:,1]-angle2[:,1])
     return np.sqrt(deltara**2+deltadec**2)
+# function that cross checks GD-1 stars with raw patch data, returns boolean array
 def FilterGD1(stars, gd1_stars):
     gd1stars=np.zeros(len(stars))
     for x in tqdm(gd1_stars):
@@ -67,7 +68,7 @@ patch_list = [
 
 gd1 = np.load('./../gaia-data/gd1/gd1_stars.npy')
 
-# clean file columns, cross-check as GD-1, save as hdf5 files
+# for each patch: add patch columns headers, cross-check as GD-1, save as hdf5 files
 for patch_id in range(len(patch_list)):
     file = patch_list[patch_id]
 
