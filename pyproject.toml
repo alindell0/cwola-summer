@@ -5,9 +5,12 @@ requires-python = ">=3.6"
 dependencies = [
     "astropy>=4.1",
     "h5py>=3.1.0",
+    "jupyter>=1.1.1",
+    "jupyterlab>=2.3.2",
     "keras>=2.7.0",
     "livelossplot>=0.5.4",
     "matplotlib>=3.3.4",
+    "notebook>=6.4.10",
     "numpy>=1.19.5",
     "pandas>=0.25.3",
     "scikit-learn>=0.24.2",
