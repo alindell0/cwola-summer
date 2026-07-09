@@ -23,14 +23,14 @@ def plot_data(df):
     
     # create figure with 1 row and 3 columns for data subplots
     fig, axes = plt.subplots(1, 3, figsize=(15, 5), tight_layout=True)
-    fig.suptitle('Full Patch Data')
+    fig.suptitle('Full Patch')
     color = 'Greys'
 
     # plot position coordinates
-    binspos = np.linspace(-15,15,100), np.linspace(-15,15,100)
+    binspos = (np.linspace(-15,15,100), np.linspace(-15,15,100))
     h = axes[0].hist2d(df['rotra'], df['rotdec'], bins=binspos, cmap=color, cmin=0, vmax=250)
-    axes[0].set_xlabel('Rotated Right Ascension ϕ', fontsize = 10)
-    axes[0].set_ylabel('Rotated Declination λ', fontsize = 10)
+    axes[0].set_xlabel('Rotated Right Ascension ϕ [°]', fontsize = 10)
+    axes[0].set_ylabel('Rotated Declination λ [°]', fontsize = 10)
     c = fig.colorbar(h[3], ax=axes[0])
     c.ax.set_title('Counts', fontsize=8)
 
@@ -38,14 +38,48 @@ def plot_data(df):
     # plot proper motion coordinates
     binspm = (np.linspace(-20,20,100), np.linspace(-20,20,100))
     h = axes[1].hist2d(df['rotpmra'], df['rotpmdec'], bins=binspm, cmap=color, cmin=0)
-    axes[1].set_xlabel('Rotated Right Ascension Proper Motion μ_ϕcosλ', fontsize = 10)
-    axes[1].set_ylabel('Rotated Declination Proper Motion μ_λ', fontsize = 10)  
+    axes[1].set_xlabel('Rotated Proper Motion (Right Ascension) μ_ϕcosλ [mas/yr]', fontsize = 10)
+    axes[1].set_ylabel('Rotated Proper Motion (Declination) μ_λ [mas/yr]', fontsize = 10)  
     c = fig.colorbar(h[3], ax=axes[1])
     c.ax.set_title('Counts', fontsize=8)
 
     # plot photometric figures
     binsfeat = (np.linspace(0,3,100), np.linspace(10,21,100))
     h = axes[2].hist2d(df['b-r'], df['g'], bins=binsfeat, cmap=color, cmin=0)
+    axes[2].set_xlabel('Color b-r', fontsize = 10)
+    axes[2].set_ylabel('Magnitude g', fontsize = 10)
+    c = fig.colorbar(h[3], ax=axes[2])
+    c.ax.set_title('Counts', fontsize=8)
+
+    plt.show()
+
+    df_stream = df[df['stream']==True]
+
+    # create figure with 1 row and 3 columns for data subplots
+    fig, axes = plt.subplots(1, 3, figsize=(15, 5), tight_layout=True)
+    fig.suptitle('Labeled Stream Stars')
+    color = 'Reds'
+
+    # plot position coordinates
+    binspos = (np.linspace(-15,15,100), np.linspace(-15,15,100))
+    h = axes[0].hist2d(df_stream['rotra'], df_stream['rotdec'], bins=binspos, cmap=color, cmin=0)
+    axes[0].set_xlabel('Rotated Right Ascension ϕ [°]', fontsize = 10)
+    axes[0].set_ylabel('Rotated Declination λ [°]', fontsize = 10)
+    c = fig.colorbar(h[3], ax=axes[0])
+    c.ax.set_title('Counts', fontsize=8)
+
+
+    # plot proper motion coordinates
+    binspm = (np.linspace(-20,20,100), np.linspace(-20,20,100))
+    h = axes[1].hist2d(df_stream['rotpmra'], df_stream['rotpmdec'], bins=binspm, cmap=color, cmin=0)
+    axes[1].set_xlabel('Rotated Proper Motion (Right Ascension) μ_ϕcosλ [mas/yr]', fontsize = 10)
+    axes[1].set_ylabel('Rotated Proper Motion (Declination) μ_λ [mas/yr]', fontsize = 10)  
+    c = fig.colorbar(h[3], ax=axes[1])
+    c.ax.set_title('Counts', fontsize=8)
+
+    # plot photometric figures
+    binsfeat = (np.linspace(0,3,100), np.linspace(10,21,100))
+    h = axes[2].hist2d(df_stream['b-r'], df_stream['g'], bins=binsfeat, cmap=color, cmin=0)
     axes[2].set_xlabel('Color b-r', fontsize = 10)
     axes[2].set_ylabel('Magnitude g', fontsize = 10)
     c = fig.colorbar(h[3], ax=axes[2])
