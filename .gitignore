@@ -4,6 +4,7 @@
 .npy
 .h5
 gaia-data/
+exploration/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
