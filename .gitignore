@@ -1,8 +1,8 @@
 # cwola-summer project
-.venv/
-.fits
-.npy
-.h5
+*.venv/
+*.fits
+*.npy
+*.h5
 gaia-data/
 
 # Byte-compiled / optimized / DLL files
