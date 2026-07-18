@@ -183,7 +183,7 @@ def toy_signal_sideband(df, sig_factor=1.5):
 
 
 
-def train(df, batch_size=16, learning_rate=0.0001, epochs=20):
+def train(df, dropout=0.2, batch_size=16, learning_rate=0.0001, epochs=20):
     # split into 80/10/10 groups, equal percentage of signal/sideband region
 
     # split indices of signal region
@@ -225,8 +225,8 @@ def train(df, batch_size=16, learning_rate=0.0001, epochs=20):
     df_test  = pd.concat([df_sigtest, df_sbtest]).sample(frac=1).reset_index(drop=True)    
 
     # print(f"Training set has {len(df_train)} events, {len(df_train[df_train['region label']==1])/len(df_train)} from the signal region and {len(df_train[df_train['region label']==0])/len(df_train)} from the sideband region.")
-    # print(f"Validation set has {len(X_val)} events, {len(df_val[df_val['region label']==1])/len(df_val)} from the signal region and {len(df_val[df_val['region label']==0])/len(df_val)} from the sideband region.")
-    # print(f"Test set has {len(X_test)} events, {len(df_test[df_test['region label']==1])/len(df_test)} from the signal region and {len(df_test[df_test['region label']==0])/len(df_test)} from the sideband region.")
+    # print(f"Validation set has {len(df_val)} events, {len(df_val[df_val['region label']==1])/len(df_val)} from the signal region and {len(df_val[df_val['region label']==0])/len(df_val)} from the sideband region.")
+    # print(f"Test set has {len(df_train)} events, {len(df_test[df_test['region label']==1])/len(df_test)} from the signal region and {len(df_test[df_test['region label']==0])/len(df_test)} from the sideband region.")
 
     scaler = StandardScaler()
 
@@ -269,13 +269,13 @@ def train(df, batch_size=16, learning_rate=0.0001, epochs=20):
             self.NeuralNetwork = nn.Sequential(
                 nn.Linear(input_dim, hidden_dim),
                 nn.ReLU(),
-                nn.Dropout(p=0.2),       
+                nn.Dropout(p=dropout),       
                 nn.Linear(hidden_dim, hidden_dim),
                 nn.ReLU(),
-                nn.Dropout(p=0.2),       
+                nn.Dropout(p=dropout),       
                 nn.Linear(hidden_dim, hidden_dim),
                 nn.ReLU(),
-                nn.Dropout(p=0.2),       
+                nn.Dropout(p=dropout),       
                 nn.Linear(hidden_dim, output_dim),
                 nn.Sigmoid()
             )
@@ -405,6 +405,12 @@ def train(df, batch_size=16, learning_rate=0.0001, epochs=20):
     false_pos = np.sum((all_scores == 1) & (all_true_labels == 0))
     true_neg = np.sum((all_scores == 0) & (all_true_labels == 0))
     false_neg = np.sum((all_scores == 0) & (all_true_labels == 1))
+    
+    print(' ')
+    print(f"TP = {true_pos}")
+    print(f"FP = {false_pos}")
+    print(f"FN = {false_neg}")
+    print(f"TN = {true_neg}")
 
     purity = true_pos / (true_pos + false_pos)
     completeness = true_pos / (true_pos + false_neg)
@@ -416,8 +422,8 @@ def train(df, batch_size=16, learning_rate=0.0001, epochs=20):
 
 ###
 
-def maketoydata(background_fraction, signal_fraction):
-    df = toy_data(background_fraction, signal_fraction)
+def maketoydata(background_fraction, signal_fraction, total_events=10000):
+    df = toy_data(background_fraction, signal_fraction, total_events)
     plot_toy_data(df)
     df = toy_signal_sideband(df)
     return df

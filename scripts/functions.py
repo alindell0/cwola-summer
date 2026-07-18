@@ -6,7 +6,6 @@ import matplotlib.pyplot as plt
 
 
 
-
 ### loading .h5 file
 
 def load_data(patch_idx):
@@ -89,7 +88,76 @@ def plot_data(df):
 
 
 
+# define signal sideband region
 
+def signal_sideband(df, pm_parameter='rotpmdec', sig_factor=0.25, sb_factor=0.5, bin_num=55):
+                    
+    if pm_parameter == 'rotpmdec':
+        pm_name = 'Rotated and Centered Proper Motion (DEC) μ_λ'
+    if pm_parameter == 'rotpmra':
+        pm_name = 'Rotated and Centered Proper Motion (RA) μ_ϕcosλ'
+
+    print(f'Signal parameter: {pm_name}')
+    print(f'Signal region factor = {sig_factor} and sideband region factor = {sb_factor}')
+
+    df_stream = df[df['stream']==True]
+    signal_parameter = df_stream[pm_parameter]
+    pm_median = np.median(signal_parameter)
+    pm_std = np.std(signal_parameter)
+    print(f'Signal parameter median = {pm_median:.3f}')
+    print(f'Signal parameter standard deviation = {pm_std:.3f}')
+    
+    sig_low = pm_median - sig_factor*pm_std
+    sig_high = pm_median + sig_factor*pm_std
+    sb_low = pm_median - sb_factor*pm_std
+    sb_high = pm_median + sb_factor*pm_std
+    print(f'Signal Region Range: [{sig_low:.3f}, {sig_high:.3f}]')
+    print(f'Sideband Region Range: [{sb_low:.3f}, {sig_low:.3f}) and ({sig_high:.3f}, {sb_high:.3f}]')
+
+    df_outer_region = df[(df[pm_parameter] < sb_low) | (df[pm_parameter] > sb_high)]
+    df_outer_region_stream = df_outer_region[df_outer_region['stream']==True]
+    df_outer_region_background = df_outer_region[df_outer_region['stream']==False]
+    
+    df_regions = df[(df[pm_parameter] >= sb_low) & (df[pm_parameter] <= sb_high)]
+    # sideband region = 0, signal region = 1
+    df_regions['region_label'] = np.where((df_regions[pm_parameter] >= sig_low) & (df_regions[pm_parameter] <= sig_high), 1, 0)
+    
+    df_sig_region = df_regions[df_regions['region_label']==1]
+    df_sb_region = df_regions[df_regions['region_label']==0]
+    
+    df_sig_region_stream = df_sig_region[df_sig_region['stream']==True]
+    df_sig_region_background = df_sig_region[df_sig_region['stream']==False]
+    
+    df_sb_region_stream = df_sb_region[df_sb_region['stream']==True]
+    df_sb_region_background = df_sb_region[df_sb_region['stream']==False]
+    
+    print(f'Signal Region has {len(df_sig_region)} stars, {len(df_sig_region_stream)} stream and {len(df_sig_region_background)} background.')
+    print(f'Sideband Region has {len(df_sb_region)} stars, {len(df_sb_region_stream)} stream and {len(df_sb_region_background)} background.') 
+    print(f'Outer Region has {len(df_outer_region)} stars, {len(df_outer_region_stream)} stream and {len(df_outer_region_background)} background.') 
+
+    bins = np.linspace(sb_low - (sig_low - sb_low), sb_high + (sb_high - sig_high), bin_num)
+    plt.hist(df_sig_region_stream[pm_parameter], label='Signal Region', color='red', alpha=1, bins=bins)
+    plt.hist(df_sb_region_stream[pm_parameter], label='Sideband Region', color='red', alpha=0.5, bins=bins)
+    plt.hist(df_outer_region_stream[pm_parameter], label='Outer Region', color='red', alpha=0.25, bins=bins)
+    plt.xlabel(f'{pm_name} [mas/yr]')
+    plt.ylabel('Number of Stars')
+    plt.title('Stream Stars in Patch')
+    plt.legend()
+    plt.show()
+    plt.hist(df_sig_region_background[pm_parameter], label='Signal Region', color='grey', alpha=1, bins=bins)
+    plt.hist(df_sb_region_background[pm_parameter], label='Sideband Region', color='grey', alpha=0.5, bins=bins)
+    plt.hist(df_outer_region_background[pm_parameter], label='Outer Region', color='grey', alpha=0.25, bins=bins)
+    plt.xlabel(f'{pm_name} [mas/yr]')
+    plt.ylabel('Number of Stars')
+    plt.title('Background Stars in Patch')
+    plt.legend()
+    plt.show()
+
+    return df_regions
+
+
+
+    
 
 ### cleaning up and converting raw .npy data to .h5, functions from Dr. Pettee's repo https://github.com/hep-lbdl/GaiaCWoLa/tree/main
 
