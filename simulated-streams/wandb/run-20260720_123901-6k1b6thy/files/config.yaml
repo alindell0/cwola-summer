@@ -1,0 +1,120 @@
+_wandb:
+    value:
+        cli_version: 0.28.0
+        e:
+            ky5mg0mroctk6528o4xi1i899lfzx910:
+                cpu_count: 64
+                cpu_count_logical: 128
+                cudaVersion: "13.0"
+                disk:
+                    /:
+                        total: "134865874944"
+                        used: "963846144"
+                email: atlindell@gmail.com
+                executable: /global/cfs/cdirs/m4474/alindell/cwola-summer/.venv/bin/python
+                git:
+                    commit: 78b7ee367631e7d3ce5bb88a35a52561d4701976
+                    remote: git@github.com:alindell0/cwola-summer.git
+                gpu: NVIDIA A100-SXM4-40GB
+                gpu_count: 4
+                gpu_nvidia:
+                    - architecture: Ampere
+                      cudaCores: 6912
+                      memoryTotal: "42949672960"
+                      name: NVIDIA A100-SXM4-40GB
+                      uuid: GPU-ce6ac2a0-95d9-c6bd-e2bd-9cbe7c7d6b9f
+                    - architecture: Ampere
+                      cudaCores: 6912
+                      memoryTotal: "42949672960"
+                      name: NVIDIA A100-SXM4-40GB
+                      uuid: GPU-83af462e-1113-d09c-c3b8-e1306b234424
+                    - architecture: Ampere
+                      cudaCores: 6912
+                      memoryTotal: "42949672960"
+                      name: NVIDIA A100-SXM4-40GB
+                      uuid: GPU-5460ac27-cd47-0376-be71-c65ae07f437c
+                    - architecture: Ampere
+                      cudaCores: 6912
+                      memoryTotal: "42949672960"
+                      name: NVIDIA A100-SXM4-40GB
+                      uuid: GPU-5287b272-86bb-6855-1a24-3477a8090a7b
+                host: nid001693
+                memory:
+                    total: "269731749888"
+                os: Linux-6.4.0-150600.23.103_15.0.25-cray_shasta_c-x86_64-with-glibc2.38
+                program: <python with no main file>
+                python: CPython 3.13.11
+                root: /global/cfs/cdirs/m4474/alindell/cwola-summer/simulated-streams
+                slurm:
+                    cluster_name: perlmutter
+                    cpus_on_node: "128"
+                    cpus_per_task: "128"
+                    gpus_on_node: "4"
+                    gtids: "0"
+                    job_account: m4474_g
+                    job_cpus_per_node: "128"
+                    job_end_time: "1784592066"
+                    job_gid: "114425"
+                    job_gpus: 0,1,2,3
+                    job_id: "56211116"
+                    job_licenses: u2:1
+                    job_name: jupyter
+                    job_nodelist: nid001693
+                    job_num_nodes: "1"
+                    job_partition: urgent_gpu_ss11
+                    job_qos: gpu_jupyter
+                    job_start_time: "1784570466"
+                    job_uid: "114425"
+                    job_user: alindell
+                    jobid: "56211116"
+                    localid: "0"
+                    nnodes: "1"
+                    nodeid: "0"
+                    nodelist: nid001693
+                    nprocs: "1"
+                    ntasks: "1"
+                    ntasks_per_node: "1"
+                    oom_kill_step: "0"
+                    prio_process: "0"
+                    procid: "0"
+                    script_context: prolog_task
+                    stepmgr: nid001693
+                    submit_dir: /global/u2/a/alindell
+                    submit_host: login28
+                    task_pid: "749332"
+                    tasks_per_node: "1"
+                    topology_addr: global.group10.nid001693
+                    topology_addr_pattern: switch.switch.node
+                    tres_bind: gres/gpu:per_task:4
+                    tres_per_task: cpu=128,gres/gpu=4
+                startedAt: "2026-07-20T19:39:01.201475Z"
+                writerId: ky5mg0mroctk6528o4xi1i899lfzx910
+        m: []
+        python_version: 3.13.11
+        t:
+            "1":
+                - 1
+                - 5
+                - 53
+            "2":
+                - 1
+                - 5
+                - 53
+            "3":
+                - 2
+                - 13
+                - 16
+            "4": 3.13.11
+            "5": 0.28.0
+            "8":
+                - 1
+            "10":
+                - 20
+            "12": 0.28.0
+            "13": linux-x86_64
+test_fold:
+    value: 1
+train_loop:
+    value: 0
+val_set:
+    value: 4
