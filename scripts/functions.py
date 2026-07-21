@@ -245,15 +245,15 @@ def cwola_train(df, pm_parameter='rotpmdec', dropout=0.2, k_folds=5, batch_size=
                     
 
             ## create tensors, datasets, and loaders
-            train_x_tensor = torch.tensor(np.array(train_x))
-            train_y_tensor = torch.tensor(train_y)
+            train_x_tensor = torch.tensor(np.array(train_x), dtype=torch.float32, device=device)
+            train_y_tensor = torch.tensor(train_y, dtype=torch.float32, device=device)
                 
-            val_x_tensor = torch.tensor(np.array(val_x))
-            val_y_tensor = torch.tensor(val_y)
+            val_x_tensor = torch.tensor(np.array(val_x), dtype=torch.float32, device=device)
+            val_y_tensor = torch.tensor(val_y, dtype=torch.float32, device=device)
                 
-            test_x_tensor = torch.tensor(np.array(test_x))
-            test_y_tensor = torch.tensor(test_y)
-            test_y_true_tensor = torch.tensor(test_y_true)
+            test_x_tensor = torch.tensor(np.array(test_x), dtype=torch.float32, device=device)
+            test_y_tensor = torch.tensor(test_y, dtype=torch.float32, device=device)
+            test_y_true_tensor = torch.tensor(test_y_true, dtype=torch.long, device=device)
                 
             train_dataset = TensorDataset(train_x_tensor, train_y_tensor)
             val_dataset = TensorDataset(val_x_tensor, val_y_tensor)
@@ -277,6 +277,7 @@ def cwola_train(df, pm_parameter='rotpmdec', dropout=0.2, k_folds=5, batch_size=
                             config={"test_fold": test_idx, "val_set": val_idx, "train_loop": n},
                             reinit=True)
                 model = NeuralNetwork(input_dim = 5, hidden_dim = 256, output_dim = 1, dropout=dropout).to(device)
+                model = torch.compile(model)
                 loss_fn = nn.BCELoss()
                 optimizer = torch.optim.Adam(model.parameters(), lr=lr)
     
@@ -287,44 +288,42 @@ def cwola_train(df, pm_parameter='rotpmdec', dropout=0.2, k_folds=5, batch_size=
                 
                     # training
                     model.train()
-                    total_train_loss = 0
-                    train_correct, counts = 0, 0
+                    total_train_loss = torch.tensor(0.0, device=device)
+                    train_correct = torch.tensor(0.0, device=device)
+                    counts = 0
+                    
                     for inputs, region_labels in train_loader:
                         optimizer.zero_grad()
-                        inputs = inputs.to(device).float()
-                        region_labels = region_labels.to(device).float()
-                        
                         out = model(inputs).squeeze(1)
                         loss = loss_fn(out, region_labels)
                         loss.backward()
                         optimizer.step()
-                        total_train_loss += loss.item()
-                
+                        total_train_loss += loss.detach() * inputs.size(0)
+                    
                         predictions = (out > 0.5).float()
-                        train_correct += (predictions == region_labels).sum().item()
+                        train_correct += (predictions == region_labels).sum()
                         counts += region_labels.size(0)
-                
-                    avg_train_loss = total_train_loss / len(train_loader)
-                    train_accuracy = train_correct / counts
-                
+                    
+                    avg_train_loss = (total_train_loss / counts).item()  
+                    train_accuracy = (train_correct / counts).item()
+                    
                     # validation
                     model.eval()
-                    total_val_loss = 0
-                    val_correct, counts = 0.0, 0
-                    for inputs, region_labels in val_loader:
-                        inputs = inputs.to(device).float()
-                        region_labels = region_labels.to(device).float()
+                    total_val_loss = torch.tensor(0.0, device=device)
+                    val_correct = torch.tensor(0.0, device=device)
+                    counts = 0
+                    with torch.no_grad():
+                        for inputs, region_labels in val_loader:
+                            out = model(inputs).squeeze(1)  # forward pass
+                            loss = loss_fn(out, region_labels)  # compute loss
+                            total_val_loss += loss.detach() * inputs.size(0)
+                    
+                            predictions = (out > 0.5).float()
+                            val_correct += (predictions == region_labels).sum()
+                            counts += region_labels.size(0)
                 
-                        out = model(inputs).squeeze(1)  # forward pass
-                        loss = loss_fn(out, region_labels)  # compute loss
-                        total_val_loss += loss.item()
-                
-                        predictions = (out > 0.5).float()
-                        val_correct += (predictions == region_labels).sum().item()
-                        counts += region_labels.size(0)
-                
-                    avg_val_loss = total_val_loss / len(val_loader)
-                    val_accuracy = val_correct / counts
+                    avg_val_loss = (total_val_loss / counts).item()
+                    val_accuracy = (val_correct / counts).item()
 
                     wandb.log({"train_loss": avg_train_loss, "val_loss": avg_val_loss, 
                              "train_acc": train_accuracy, "val_acc": val_accuracy, "epoch": epoch})
@@ -358,9 +357,6 @@ def cwola_train(df, pm_parameter='rotpmdec', dropout=0.2, k_folds=5, batch_size=
             
             with torch.no_grad():
                 for inputs, region_labels, true_labels in test_loader:
-                    
-                    inputs = inputs.to(device).float()
-                    region_labels = region_labels.to(device).float()
                     out = model(inputs).squeeze()
                     raw_scores.extend(out.squeeze().cpu().numpy())
                     loss = loss_fn(out, region_labels)
@@ -379,7 +375,6 @@ def cwola_train(df, pm_parameter='rotpmdec', dropout=0.2, k_folds=5, batch_size=
     df_test_full.to_hdf(f'{save_folder}/df_test.h5', key=f'data', mode='w')
         
     return df_test_full
-
 
 def fiducial_cuts(df): # CWOLA Stellar Stream fiducial cuts https://arxiv.org/pdf/2305.03761
     df = df[df['g'] < 20.2] # ensures uniform acceptance by Gaia satellite
