@@ -27,7 +27,7 @@ def load_data(patch_idx):
 
 
 
-def plot_data(df, save_folder = f'simulated-streams/plots'):
+def plot_data(df, save_folder = 'simulated-data/plots'):
 
     os.makedirs(save_folder, exist_ok=True)
     
@@ -61,7 +61,6 @@ def plot_data(df, save_folder = f'simulated-streams/plots'):
     c = fig.colorbar(h[3], ax=axes[2])
     c.ax.set_title('Counts', fontsize=8)
 
-    plt.show()
     plt.savefig(os.path.join(save_folder, "alldataplots.png"))
 
     df_stream = df[df['stream']==True]
@@ -96,7 +95,6 @@ def plot_data(df, save_folder = f'simulated-streams/plots'):
     c = fig.colorbar(h[3], ax=axes[2])
     c.ax.set_title('Counts', fontsize=8)
 
-    plt.show()
     plt.savefig(os.path.join(save_folder, "streamdataplots.png"))
 
 
