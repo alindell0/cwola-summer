@@ -4,6 +4,7 @@
 *.npy
 *.h5
 gaia-data/
+wandb/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
