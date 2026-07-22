@@ -1,7 +1,7 @@
 [project]
 name = "cwola-summer"
 version = "0.1.0"
-requires-python = ">=3.6"
+requires-python = ">=3.9"
 dependencies = [
     "astropy>=4.1",
     "h5py>=3.1.0",
@@ -17,6 +17,14 @@ dependencies = [
     "seaborn>=0.11.2",
     "tables>=3.7.0",
     "tensorflow>=2.7.4",
-    "torch>=1.5.1",
     "tqdm>=4.64.1",
+    "torch>=2.3.0"
 ]
+
+[tool.uv.sources]
+torch = { index = "pytorch-cu121" }
+
+[[tool.uv.index]]
+name = "pytorch-cu121"
+url = "https://download.pytorch.org/whl/cu121"
+explicit = true
