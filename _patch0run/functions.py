@@ -4,11 +4,11 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import torch
-import seaborn as sns
 from torch import nn
 from torch.utils.data import DataLoader, TensorDataset
 from sklearn.model_selection import StratifiedKFold
 from sklearn.preprocessing import StandardScaler
+from sklearn.cluster import KMeans
 import copy
 import wandb
 import os
@@ -32,7 +32,8 @@ def plot_data(df, save_folder = 'simulated-data/plots', verbose=True):
     if not verbose:
         return
 
-    os.makedirs(save_folder, exist_ok=True)
+    if save_folder is not None:
+        os.makedirs(save_folder, exist_ok=True)
 
     # create figure with 1 row and 3 columns for data subplots
     fig, axes = plt.subplots(1, 3, figsize=(15, 5), tight_layout=True)
@@ -64,7 +65,8 @@ def plot_data(df, save_folder = 'simulated-data/plots', verbose=True):
     c = fig.colorbar(h[3], ax=axes[2])
     c.ax.set_title('Counts', fontsize=8)
 
-    plt.savefig(os.path.join(save_folder, "alldataplots.png"))
+    if save_folder is not None:
+        plt.savefig(os.path.join(save_folder, "alldataplots.png"))
 
     df_stream = df[df['stream']==True]
 
@@ -98,7 +100,8 @@ def plot_data(df, save_folder = 'simulated-data/plots', verbose=True):
     c = fig.colorbar(h[3], ax=axes[2])
     c.ax.set_title('Counts', fontsize=8)
 
-    plt.savefig(os.path.join(save_folder, "streamdataplots.png"))
+    if save_folder is not None:
+        plt.savefig(os.path.join(save_folder, "streamdataplots.png"))
 
 
 # define signal sideband region
@@ -174,7 +177,9 @@ def signal_sideband(df, pm_parameter='rotpmdec', sig_factor=0.25, sb_factor=0.5,
 
 
 
-def cwola_train(df, pm_parameter='rotpmdec', dropout=0.2, k_folds=5, batch_size=10000, lr=0.001, patience=30, epochs=100, trainval_loops=3, save_folder='../results/simulated-streams/sim-1patch', wandbproj='sim-1patch', device=None, rank=0, world_size=1):
+def cwola_train(df, pm_parameter='rotpmdec', dropout=0.2, k_folds=5, batch_size=10000, lr=0.001, patience=30, epochs=100, trainval_loops=3, save_folder='../results/simulated-streams/sim-1patch', wandbproj='sim-1patch', device=None, rank=0):
+
+    use_wandb = wandbproj is not None
 
     os.makedirs(save_folder, exist_ok=True)
 
@@ -206,7 +211,7 @@ def cwola_train(df, pm_parameter='rotpmdec', dropout=0.2, k_folds=5, batch_size=
 
     if device is None:
         device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    print(f'[rank {rank}/{world_size}] Using device: {device}')
+    print(f'[rank {rank}] Using device: {device}')
 
     # k-folding
     skf = StratifiedKFold(n_splits=k_folds, shuffle=True, random_state=18)
@@ -216,11 +221,9 @@ def cwola_train(df, pm_parameter='rotpmdec', dropout=0.2, k_folds=5, batch_size=
         fold_stars.append(test_index)
     fold_labels = np.arange(len(fold_stars)) # fold labels is an array of values 0-4, representing indices/labels of the 5 folds
 
-    # each rank only trains/tests on its own subset of the k test folds (embarrassingly
-    # parallel across GPUs — StratifiedKFold's fixed random_state makes fold_stars
-    # identical across ranks, so no cross-process communication is needed)
-    my_test_folds = fold_labels[rank::world_size]
-    print(f'[rank {rank}/{world_size}] assigned test folds: {list(my_test_folds)}')
+    # each rank only trains/tests on its own subset of the k test folds
+    my_test_folds = fold_labels[rank::1]
+    print(f'[rank {rank}] assigned test folds: {list(my_test_folds)}')
 
     test_dfs = []
     for test_idx in my_test_folds:
@@ -284,12 +287,13 @@ def cwola_train(df, pm_parameter='rotpmdec', dropout=0.2, k_folds=5, batch_size=
             for n in range(trainval_loops):
 
                 # initialize model
-                run = wandb.init(project=wandbproj, 
-                            group=f"fold_{test_idx}", 
-                            job_type=f"val_set_{val_idx}", 
-                            name=f"test_{test_idx}_val_{val_idx}_train_{n}",
-                            config={"test_fold": test_idx, "val_set": val_idx, "train_loop": n},
-                            reinit=True)
+                if use_wandb:
+                    run = wandb.init(project=wandbproj,
+                                group=f"fold_{test_idx}",
+                                job_type=f"val_set_{val_idx}",
+                                name=f"test_{test_idx}_val_{val_idx}_train_{n}",
+                                config={"test_fold": test_idx, "val_set": val_idx, "train_loop": n},
+                                reinit=True)
                 model = NeuralNetwork(input_dim = 5, hidden_dim = 256, output_dim = 1, dropout=dropout).to(device)
                 model = torch.compile(model)
                 loss_fn = nn.BCELoss()
@@ -339,9 +343,10 @@ def cwola_train(df, pm_parameter='rotpmdec', dropout=0.2, k_folds=5, batch_size=
                     avg_val_loss = (total_val_loss / counts).item()
                     val_accuracy = (val_correct / counts).item()
 
-                    wandb.log({"train_loss": avg_train_loss, "val_loss": avg_val_loss, 
-                             "train_acc": train_accuracy, "val_acc": val_accuracy, "epoch": epoch})
-                    
+                    if use_wandb:
+                        wandb.log({"train_loss": avg_train_loss, "val_loss": avg_val_loss,
+                                 "train_acc": train_accuracy, "val_acc": val_accuracy, "epoch": epoch})
+
                     # early stopping
                     if avg_val_loss < best_val_loss:
                         best_val_loss = avg_val_loss
@@ -358,7 +363,8 @@ def cwola_train(df, pm_parameter='rotpmdec', dropout=0.2, k_folds=5, batch_size=
                     best_loop_val_loss = best_val_loss
                     lowest_val_loss_model = best_model ## model parameters from epoch with the lowest validation loss
 
-                run.finish()
+                if use_wandb:
+                    run.finish()
 
             model_save_path = os.path.join(save_folder_test, "val_set_{}_best_model".format(val_idx))
             torch.save(lowest_val_loss_model, model_save_path) ## model parameters from training run with the lowest validation loss
@@ -385,22 +391,35 @@ def cwola_train(df, pm_parameter='rotpmdec', dropout=0.2, k_folds=5, batch_size=
         df_test['nn_score'] = np.mean(test_nn_scores, axis=0)
         test_dfs.append(df_test)
     
-    df_test_partial = pd.concat([df for df in test_dfs])
-    # each rank writes its own file; merge_results.py concatenates them once every
-    # rank has finished (torchrun blocks until all processes exit)
-    df_test_partial.to_hdf(f'{save_folder}/df_test_rank{rank}.h5', key='data', mode='w')
+    df_test_full = pd.concat([df for df in test_dfs])
+    out_path = f'{save_folder}/df_test.h5'
+    df_test_full.to_hdf(out_path, key='data', mode='w')
 
-    return df_test_partial
+    return df_test_full
 
-def fiducial_cuts(df): # CWOLA Stellar Stream fiducial cuts https://arxiv.org/pdf/2305.03761
-    df = df[df['g'] < 20.2] # ensures uniform acceptance by Gaia satellite
-    df = df[(np.abs(df['rotpmdec']) > 2) | (np.abs(df['rotpmra']) > 2)] # remove distant stars concentrated near zero proper motion, not equally distributed throughout patch
-    df = df[(df['b-r'] >= 0.5) & (df['b-r'] <=1 )] # isolates old and low-metallicity stellar streams in color space
+
+
+# def fiducial_selections(df, do_kmeans=True, k=2): 
+#     # CWOLA Stellar Stream fiducial cuts https://arxiv.org/pdf/2305.03761
+#     df = df[df['g'] < 20.2] # ensures uniform acceptance by Gaia satellite
+#     df = df[(np.abs(df['rotpmdec']) > 2) | (np.abs(df['rotpmra']) > 2)] # remove distant stars concentrated near zero proper motion, not equally distributed throughout patch
+#     df = df[(df['b-r'] >= 0.5) & (df['b-r'] <=1 )] # isolates old and low-metallicity stellar streams in color space
+
+#     # Kmeans clustering
+#     if do_kmeans:
+
+#     return df
+
+
+def compute_purity(df, top_n=250):
+    df_ranked = df.sort_values(by='nn_score', ascending=False)
+    df_top = df_ranked[:top_n]
+    return len(df_top[df_top['stream']==True]) / len(df_top)
 
 
 def get_results(df, top_n=250, save_folder='../results/simulated-streams/sim-1patch/plots'):
     os.makedirs(save_folder, exist_ok=True)
-    
+
     df_signalreg = df[df['region_label']==1]
     df_backgroundreg = df[df['region_label']==0]
 
@@ -413,8 +432,8 @@ def get_results(df, top_n=250, save_folder='../results/simulated-streams/sim-1pa
     plt.xlabel('NN Score')
     plt.ylabel('Number of Stars')
     plt.legend()
-    plt.show()
     plt.savefig(os.path.join(save_folder, "nnscoreregions.png"))
+    plt.close()
 
     plt.hist(df_streamstar['nn_score'], label='Stream Stars', color='red', histtype='step', bins=50)
     plt.hist(df_backgroundstar['nn_score'], label='Background Stars', color='grey', histtype='step', bins=50)
@@ -422,17 +441,17 @@ def get_results(df, top_n=250, save_folder='../results/simulated-streams/sim-1pa
     plt.xlabel('NN Score')
     plt.ylabel('Number of Stars')
     plt.legend()
-    plt.show()
     plt.savefig(os.path.join(save_folder, "nnscorestars.png"))
+    plt.close()
 
     # top N stars
     df_ranked = df.sort_values(by='nn_score', ascending=False)
     df_top = df_ranked[:top_n]
 
     # purity
-    purity = len(df_top[df_top['stream']==True]) / len(df_top)
+    purity = compute_purity(df, top_n=top_n)
     print(f'Top {top_n} ranked stars: Purity = {purity*100}%')
-    
+
     plt.scatter(df_streamstar['ra'], df_streamstar['dec'], label='GD-1 Stars', color='grey', marker='.', s=5)
     plt.scatter(df_top['ra'], df_top['dec'], label=f'Top Ranked CWoLa Stars, purity = {purity*100}%', color='blue', marker='.', s=5)
     df_top_stream = df_top[df_top['stream']==True]    
@@ -440,8 +459,8 @@ def get_results(df, top_n=250, save_folder='../results/simulated-streams/sim-1pa
     plt.xlabel('Rotated Right Ascension ϕ [°]')
     plt.ylabel('Rotated Declination λ [°]')
     plt.legend()
-    plt.show()
     plt.savefig(os.path.join(save_folder, "topnstars.png"))
+    plt.close()
 
 
 

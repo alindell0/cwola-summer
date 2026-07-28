@@ -8,6 +8,10 @@ wandb/
 __pycache__/
 *.pyc
 *.tar.gz
+*.sh
+*.sub
+logs/
+results/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
