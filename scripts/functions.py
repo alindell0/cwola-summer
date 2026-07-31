@@ -26,7 +26,7 @@ def load_data(patch_idx):
     return df
 
 
-def plot_data(df, save_folder = 'gaia-data/plots/patch'):
+def plot_data(df, save_folder = '../gaia-data/plots/patch'):
 
     if save_folder is not None:
         os.makedirs(save_folder, exist_ok=True)
@@ -101,7 +101,7 @@ def plot_data(df, save_folder = 'gaia-data/plots/patch'):
 
 # define signal sideband region
 
-def signal_sideband(df, save_folder = 'results/stream/patch/plots', pm_parameter='rotpmdec', sig_factor=0.25, sb_factor=0.5, bin_num=55, verbose=True):
+def signal_sideband(df, save_folder = '../results/stream/patch', pm_parameter='rotpmdec', sig_factor=0.25, sb_factor=0.5, bin_num=55, verbose=True):
     if save_folder is not None:
         os.makedirs(save_folder, exist_ok=True)
 
@@ -447,6 +447,8 @@ def get_results(df, top_n=250, fid_cuts=True save_folder='../results/streams/pat
     # top N stars
     df_ranked = df.sort_values(by='nn_score', ascending=False)
     df_top = df_ranked[:top_n]
+    outpath = f'{save_folder}/df_top.h5'
+    df_top.to_hdf(outpath, key='df_top', mode='w')
 
     # purity and completeness
     purity, completeness = compute_purity_and_completeness(df, top_n=top_n)
