@@ -26,11 +26,16 @@ def load_data(patch_idx):
     return df
 
 
+def fiducial_cuts(df): 
+    # CWOLA Stellar Stream fiducial cuts https://arxiv.org/pdf/2305.03761
+    df = df[df['g'] < 20.2] # ensures uniform acceptance by Gaia satellite
+    df = df[(np.abs(df['rotpmdec']) > 2) | (np.abs(df['rotpmra']) > 2)] # remove distant stars concentrated near zero proper motion, not equally distributed throughout patch
+    df = df[(df['b-r'] >= 0.5) & (df['b-r'] <=1 )] # isolates old and low-metallicity stellar streams in color space
+    return df
 
-def plot_data(df, save_folder = 'simulated-data/plots', verbose=True):
 
-    if not verbose:
-        return
+
+def plot_data(df, save_folder = 'gaia-data/plots/patch'):
 
     if save_folder is not None:
         os.makedirs(save_folder, exist_ok=True)
@@ -47,7 +52,6 @@ def plot_data(df, save_folder = 'simulated-data/plots', verbose=True):
     axes[0].set_ylabel('Rotated Declination λ [°]', fontsize = 10)
     c = fig.colorbar(h[3], ax=axes[0])
     c.ax.set_title('Counts', fontsize=8)
-
 
     # plot proper motion coordinates
     binspm = (np.linspace(-20,20,100), np.linspace(-20,20,100))
@@ -83,7 +87,6 @@ def plot_data(df, save_folder = 'simulated-data/plots', verbose=True):
     c = fig.colorbar(h[3], ax=axes[0])
     c.ax.set_title('Counts', fontsize=8)
 
-
     # plot proper motion coordinates
     binspm = (np.linspace(-20,20,100), np.linspace(-20,20,100))
     h = axes[1].hist2d(df_stream['rotpmra'], df_stream['rotpmdec'], bins=binspm, cmap=color, cmin=0)
@@ -102,6 +105,7 @@ def plot_data(df, save_folder = 'simulated-data/plots', verbose=True):
 
     if save_folder is not None:
         plt.savefig(os.path.join(save_folder, "streamdataplots.png"))
+
 
 
 # define signal sideband region
@@ -177,7 +181,7 @@ def signal_sideband(df, pm_parameter='rotpmdec', sig_factor=0.25, sb_factor=0.5,
 
 
 
-def cwola_train(df, pm_parameter='rotpmdec', dropout=0.2, k_folds=5, batch_size=10000, lr=0.001, patience=30, epochs=100, trainval_loops=3, save_folder='../results/simulated-streams/sim-1patch', wandbproj='sim-1patch', device=None, rank=0):
+def cwola_train(df, pm_parameter='rotpmdec', dropout=0.2, k_folds=5, batch_size=10000, lr=0.001, patience=30, epochs=100, trainval_loops=3, save_folder='../results/streams/patch', wandbproj='sim-1patch', device=None, rank=0):
 
     use_wandb = wandbproj is not None
 
@@ -398,28 +402,23 @@ def cwola_train(df, pm_parameter='rotpmdec', dropout=0.2, k_folds=5, batch_size=
     return df_test_full
 
 
-
-# def fiducial_selections(df, do_kmeans=True, k=2): 
-#     # CWOLA Stellar Stream fiducial cuts https://arxiv.org/pdf/2305.03761
-#     df = df[df['g'] < 20.2] # ensures uniform acceptance by Gaia satellite
-#     df = df[(np.abs(df['rotpmdec']) > 2) | (np.abs(df['rotpmra']) > 2)] # remove distant stars concentrated near zero proper motion, not equally distributed throughout patch
-#     df = df[(df['b-r'] >= 0.5) & (df['b-r'] <=1 )] # isolates old and low-metallicity stellar streams in color space
-
-#     # Kmeans clustering
-#     if do_kmeans:
-
-#     return df
-
-
-def compute_purity(df, top_n=250):
+def compute_purity_and_completeness(df, top_n=250):
     df_ranked = df.sort_values(by='nn_score', ascending=False)
     df_top = df_ranked[:top_n]
-    return len(df_top[df_top['stream']==True]) / len(df_top)
+    purity = len(df_top[df_top['stream']==True]) / len(df_top)
+    completeness = len(df_top[df_top['stream']==True])/len(df[df['stream']==True])
+    return purity, completeness
 
 
-def get_results(df, top_n=250, save_folder='../results/simulated-streams/sim-1patch/plots'):
-    os.makedirs(save_folder, exist_ok=True)
+def get_results(df, top_n=250, fid_cuts=True save_folder='../results/streams/patch/plots'):
 
+    if fid_cuts:
+        df = fiducial_cuts(df)
+        os.makedirs(os.path.join(save_folder, 'fid_cuts'), exist_ok=True)
+
+    else:
+        os.makedirs(os.path.join(save_folder, 'no_fid_cuts'), exist_ok=True)
+    
     df_signalreg = df[df['region_label']==1]
     df_backgroundreg = df[df['region_label']==0]
 
@@ -448,9 +447,12 @@ def get_results(df, top_n=250, save_folder='../results/simulated-streams/sim-1pa
     df_ranked = df.sort_values(by='nn_score', ascending=False)
     df_top = df_ranked[:top_n]
 
-    # purity
-    purity = compute_purity(df, top_n=top_n)
+    # purity and completeness
+    purity, completeness = compute_purity_and_completeness(df, top_n=top_n)
     print(f'Top {top_n} ranked stars: Purity = {purity*100}%')
+    print(f'Top {top_n} ranked stars: Completeness = {completeness*100}%')
+
+    # plot cwola stars on top of gaia stars
 
     plt.scatter(df_streamstar['ra'], df_streamstar['dec'], label='GD-1 Stars', color='grey', marker='.', s=5)
     plt.scatter(df_top['ra'], df_top['dec'], label=f'Top Ranked CWoLa Stars, purity = {purity*100}%', color='blue', marker='.', s=5)
@@ -461,6 +463,40 @@ def get_results(df, top_n=250, save_folder='../results/simulated-streams/sim-1pa
     plt.legend()
     plt.savefig(os.path.join(save_folder, "topnstars.png"))
     plt.close()
+
+    
+    df_top_signal = df_top[df_top['stream']==True]
+    df_top_background = df_top[df_top['stream']==False]
+
+    # plot cwola stars on top of gaia stars
+    fig, axes = plt.subplots(1, 3, figsize=(15, 5), tight_layout=True)
+    fig.suptitle(f'Patch 0: CWoLa Top Matches, purity = {purity*100:.3f}%')
+    
+    axes[0].scatter(df_streamstar['ra'], df_streamstar['dec'], label='GD-1 Stars', color='grey', marker='.', s=5)
+    axes[0].scatter(df_top_signal['ra'], df_top_signal['dec'], label='CWoLa Matches', color='red', marker='.', s=5)
+    axes[0].scatter(df_top_background['ra'], df_top_background['dec'], label='CWoLa Non-Matches', color='blue', marker='.', s=5)
+    axes[0].set_xlabel('Right Ascension α [°]', fontsize = 10)
+    axes[0].set_ylabel('Declination δ [°]', fontsize = 10)
+    axes[0].legend()
+
+    axes[1].scatter(df_streamstar['rotpmra'], df_streamstar['rotpmdec'], label='GD-1 Stars', color='grey', marker='.', s=5)
+    axes[1].scatter(df_top_signal['rotpmra'], df_top_signal['rotpmdec'], label='CWoLa Matches', color='red', marker='.', s=5)
+    axes[1].scatter(df_top_background['rotpmra'], df_top_background['rotpmdec'], label='CWoLa Non-Matches', color='blue', marker='.', s=5)
+    axes[1].set_xlabel('Rotated Proper Motion (Right Ascension) μ_ϕcosλ [mas/yr]', fontsize = 10)
+    axes[1].set_ylabel('Rotated Proper Motion (Declination) μ_λ [mas/yr]', fontsize = 10)
+
+    axes[2].scatter(df_streamstar['b-r'], df_streamstar['g'], label='GD-1 Stars', color='grey', marker='.', s=5)
+    axes[2].scatter(df_top_signal['b-r'], df_top_signal['g'], label='CWoLa Matches', color='red', marker='.', s=5)
+    axes[2].scatter(df_top_background['b-r'], df_top_background['g'], label='CWoLa Non-Matches', color='blue', marker='.', s=5)
+    axes[2].set_xlabel('Color b-r', fontsize = 10)
+    axes[2].set_ylabel('Magnitude g', fontsize = 10)
+
+    plt.tight_layout()
+    fig.savefig
+
+
+
+    
 
 
 
