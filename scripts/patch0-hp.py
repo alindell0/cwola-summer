@@ -21,9 +21,9 @@ df_test = cwola_train(df_regions, pm_parameter='rotpmdec', dropout=0.2, k_folds=
                       patience=30, epochs=100, trainval_loops=3, save_folder='../patch0-hpresults/pmdec', 
                       wandbproj=None, device=None, rank=0)
 ## with fiducial cuts
-fid_results = get_results(df_test, top_n=250, fid_cuts=True save_folder='../patch0-hpresults/pmdec/fid_cuts')
+fid_results = get_results(df_test, top_n=250, fid_cuts=True, save_folder='../patch0-hpresults/pmdec/fid_cuts')
 ## without fiducial cuts
-no_fid_results = get_results(df_test, top_n=250, fid_cuts=False save_folder='../patch0-hpresults/pmdec/no_fid_cuts')
+no_fid_results = get_results(df_test, top_n=250, fid_cuts=False, save_folder='../patch0-hpresults/pmdec/no_fid_cuts')
 
 
 
@@ -34,9 +34,9 @@ df_test = cwola_train(df_regions, pm_parameter='rotpmra', dropout=0.2, k_folds=5
                       patience=30, epochs=100, trainval_loops=3, save_folder='../patch0-hpresults/pmra', 
                       wandbproj=None, device=None, rank=0)
 ## with fiducial cuts
-fid_results = get_results(df_test, top_n=250, fid_cuts=True save_folder='../patch0-hpresults/pmra/fid_cuts')
+fid_results = get_results(df_test, top_n=250, fid_cuts=True, save_folder='../patch0-hpresults/pmra/fid_cuts')
 ## without fiducial cuts
-no_fid_results = get_results(df_test, top_n=250, fid_cuts=False save_folder='../patch0-hpresults/pmra/no_fid_cuts')
+no_fid_results = get_results(df_test, top_n=250, fid_cuts=False, save_folder='../patch0-hpresults/pmra/no_fid_cuts')
 
 
 
