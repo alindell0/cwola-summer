@@ -12,6 +12,7 @@ from sklearn.cluster import KMeans
 import copy
 import wandb
 import os
+import tqdm
 
 
 
@@ -20,7 +21,6 @@ import os
 def load_data(patch_idx):
 
     # load the .h5 data file into a dataframe, uses patch index (0-20)
-
     df = pd.read_hdf(f"../gaia-data/cleaned-data/gd1_patch{patch_idx}.h5")
     print(f"Data for Patch {patch_idx}")
     return df
@@ -101,7 +101,7 @@ def plot_data(df, save_folder = '../gaia-data/plots/patch'):
 
 # define signal sideband region
 
-def signal_sideband(df, save_folder = '../results/stream/patch', pm_parameter='rotpmdec', sig_factor=0.25, sb_factor=0.5, bin_num=55, verbose=True):
+def signal_sideband(df, save_folder = '../results/stream/patch', pm_parameter='rotpmdec', sig_factor=1, sb_factor=3, bin_num=55):
     if save_folder is not None:
         os.makedirs(save_folder, exist_ok=True)
 
@@ -110,25 +110,24 @@ def signal_sideband(df, save_folder = '../results/stream/patch', pm_parameter='r
     if pm_parameter == 'rotpmra':
         pm_name = 'Rotated and Centered Proper Motion (RA) μ_ϕcosλ'
 
-    if verbose:
-        print(f'Signal parameter: {pm_name}')
-        print(f'Signal region factor = {sig_factor} and sideband region factor = {sb_factor}')
+    print(f'Signal parameter: {pm_name}')
+    print(f'Signal region factor = {sig_factor} and sideband region factor = {sb_factor}')
 
     df_stream = df[df['stream']==True]
     signal_parameter = df_stream[pm_parameter]
     pm_median = np.median(signal_parameter)
     pm_std = np.std(signal_parameter)
-    if verbose:
-        print(f'Signal parameter median = {pm_median:.3f}')
-        print(f'Signal parameter standard deviation = {pm_std:.3f}')
+
+    print(f'Signal parameter median = {pm_median:.3f}')
+    print(f'Signal parameter standard deviation = {pm_std:.3f}')
 
     sig_low = pm_median - sig_factor*pm_std
     sig_high = pm_median + sig_factor*pm_std
     sb_low = pm_median - sb_factor*pm_std
     sb_high = pm_median + sb_factor*pm_std
-    if verbose:
-        print(f'Signal Region Range: [{sig_low:.3f}, {sig_high:.3f}]')
-        print(f'Sideband Region Range: [{sb_low:.3f}, {sig_low:.3f}) and ({sig_high:.3f}, {sb_high:.3f}]')
+   
+    print(f'Signal Region Range: [{sig_low:.3f}, {sig_high:.3f}]')
+    print(f'Sideband Region Range: [{sb_low:.3f}, {sig_low:.3f}) and ({sig_high:.3f}, {sb_high:.3f}]')
 
     df_outer_region = df[(df[pm_parameter] < sb_low) | (df[pm_parameter] > sb_high)]
     df_outer_region_stream = df_outer_region[df_outer_region['stream']==True]
@@ -147,10 +146,9 @@ def signal_sideband(df, save_folder = '../results/stream/patch', pm_parameter='r
     df_sb_region_stream = df_sb_region[df_sb_region['stream']==True]
     df_sb_region_background = df_sb_region[df_sb_region['stream']==False]
     
-    if verbose:
-        print(f'Signal Region has {len(df_sig_region)} stars, {len(df_sig_region_stream)} stream and {len(df_sig_region_background)} background.')
-        print(f'Sideband Region has {len(df_sb_region)} stars, {len(df_sb_region_stream)} stream and {len(df_sb_region_background)} background.')
-        print(f'Outer Region has {len(df_outer_region)} stars, {len(df_outer_region_stream)} stream and {len(df_outer_region_background)} background.')
+    print(f'Signal Region has {len(df_sig_region)} stars, {len(df_sig_region_stream)} stream and {len(df_sig_region_background)} background.')
+    print(f'Sideband Region has {len(df_sb_region)} stars, {len(df_sb_region_stream)} stream and {len(df_sb_region_background)} background.')
+    print(f'Outer Region has {len(df_outer_region)} stars, {len(df_outer_region_stream)} stream and {len(df_outer_region_background)} background.')
 
     bins = np.linspace(sb_low - (sig_low - sb_low), sb_high + (sb_high - sig_high), bin_num)
     plt.hist(df_sig_region_stream[pm_parameter], label='Signal Region', color='red', alpha=1, bins=bins)
@@ -175,7 +173,7 @@ def signal_sideband(df, save_folder = '../results/stream/patch', pm_parameter='r
 
 
 
-def cwola_train(df, pm_parameter='rotpmdec', dropout=0.2, k_folds=5, batch_size=10000, lr=0.001, patience=30, epochs=100, trainval_loops=3, save_folder='../results/stream/patch', wandbproj='sim-1patch', device=None):
+def cwola_train(df, pm_parameter='rotpmdec', dropout=0.2, k_folds=5, batch_size=10000, lr=0.001, patience=30, epochs=100, trainval_loops=3, save_folder='../results/stream/patch', wandbproj='sim-1patch'):
 
     use_wandb = wandbproj is not None
 
@@ -184,8 +182,10 @@ def cwola_train(df, pm_parameter='rotpmdec', dropout=0.2, k_folds=5, batch_size=
     # training variables
     if pm_parameter == 'rotpmdec':
         training_vars = ['b-r', 'g', 'rotra', 'rotdec', 'rotpmra']
+        print('Proper Motion Parameter: Rotated and Centered Proper Motion (DEC) μ_λ')
     if pm_parameter == 'rotpmra':
         training_vars = ['b-r', 'g', 'rotra', 'rotdec', 'rotpmdec']
+        print('Proper Motion Parameter: Rotated and Centered Proper Motion (RA) μ_ϕcosλ')
 
     # model architecture
     class NeuralNetwork(nn.Module):
@@ -207,8 +207,7 @@ def cwola_train(df, pm_parameter='rotpmdec', dropout=0.2, k_folds=5, batch_size=
         def forward(self, x):
             return self.NeuralNetwork(x)
 
-    if device is None:
-        device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
     # k-folding
     skf = StratifiedKFold(n_splits=k_folds, shuffle=True, random_state=18)
@@ -220,12 +219,15 @@ def cwola_train(df, pm_parameter='rotpmdec', dropout=0.2, k_folds=5, batch_size=
 
     test_dfs = []
     for test_idx in my_test_folds:
+        print(f'Test fold {test_idx}...')
+        
         test_stars = fold_stars[test_idx]
         save_folder_test = os.path.join(save_folder, "test_fold_{}".format(test_idx))
         os.makedirs(save_folder_test, exist_ok=True)
 
         # cycles through remaining sets (minus the test set) for validation sets
         for val_idx in np.delete(fold_labels, test_idx):
+            print(f'Validation fold {val_idx}...')
             val_stars = fold_stars[val_idx]
     
             train_indices = np.delete(fold_labels, [test_idx, val_idx])
@@ -253,8 +255,7 @@ def cwola_train(df, pm_parameter='rotpmdec', dropout=0.2, k_folds=5, batch_size=
             val_x = scaler.transform(val_x)
             test_x = scaler.transform(test_x)
                     
-
-            ## create tensors, datasets, and loaders
+            # create tensors, datasets, and loaders
             train_x_tensor = torch.tensor(np.array(train_x), dtype=torch.float32, device=device)
             train_y_tensor = torch.tensor(train_y, dtype=torch.float32, device=device)
                 
@@ -278,6 +279,7 @@ def cwola_train(df, pm_parameter='rotpmdec', dropout=0.2, k_folds=5, batch_size=
             test_nn_scores = []
             
             for n in range(trainval_loops):
+                print(f'Starting training loop {n}')
 
                 # initialize model
                 if use_wandb:
@@ -295,7 +297,7 @@ def cwola_train(df, pm_parameter='rotpmdec', dropout=0.2, k_folds=5, batch_size=
                 best_val_loss = float('inf')
                 patience_counter = 0
                 
-                for epoch in range(epochs):
+                for epoch in tqdm(range(num_epochs), desc="Epoch {epoch}")
                 
                     # training
                     model.train()
@@ -358,7 +360,8 @@ def cwola_train(df, pm_parameter='rotpmdec', dropout=0.2, k_folds=5, batch_size=
 
                 if use_wandb:
                     run.finish()
-
+                    
+            print(f'Best validation loss for validation fold label {val_idx} = {best_val_loss}')
             model_save_path = os.path.join(save_folder_test, "val_set_{}_best_model".format(val_idx))
             torch.save(lowest_val_loss_model, model_save_path) ## model parameters from training run with the lowest validation loss
 
@@ -380,13 +383,16 @@ def cwola_train(df, pm_parameter='rotpmdec', dropout=0.2, k_folds=5, batch_size=
                     counts += region_labels.size(0)
             
             test_nn_scores.append(raw_scores)
-    
+            print(f'Test scores saved for test fold {test_idx}.')
+
+        print('Averaging nn_scores for each star from the 4 folds' best models...')
         df_test['nn_score'] = np.mean(test_nn_scores, axis=0)
         test_dfs.append(df_test)
-    
+
     df_test_full = pd.concat([df for df in test_dfs])
     out_path = f'{save_folder}/df_test.h5'
     df_test_full.to_hdf(out_path, key='data', mode='w')
+    print('Full test df with all stars saved!')
 
     return df_test_full
 
