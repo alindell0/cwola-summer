@@ -175,7 +175,7 @@ def signal_sideband(df, save_folder = '../results/stream/patch', pm_parameter='r
 
 
 
-def cwola_train(df, pm_parameter='rotpmdec', dropout=0.2, k_folds=5, batch_size=10000, lr=0.001, patience=30, epochs=100, trainval_loops=3, save_folder='../results/stream/patch', wandbproj='sim-1patch', device=None, rank=0):
+def cwola_train(df, pm_parameter='rotpmdec', dropout=0.2, k_folds=5, batch_size=10000, lr=0.001, patience=30, epochs=100, trainval_loops=3, save_folder='../results/stream/patch', wandbproj='sim-1patch', device=None):
 
     use_wandb = wandbproj is not None
 
@@ -209,7 +209,6 @@ def cwola_train(df, pm_parameter='rotpmdec', dropout=0.2, k_folds=5, batch_size=
 
     if device is None:
         device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    print(f'[rank {rank}] Using device: {device}')
 
     # k-folding
     skf = StratifiedKFold(n_splits=k_folds, shuffle=True, random_state=18)
@@ -218,10 +217,6 @@ def cwola_train(df, pm_parameter='rotpmdec', dropout=0.2, k_folds=5, batch_size=
     for fold_idx, (train_index, test_index) in enumerate(skf.split(df[training_vars], df['region_label'])):
         fold_stars.append(test_index)
     fold_labels = np.arange(len(fold_stars)) # fold labels is an array of values 0-4, representing indices/labels of the 5 folds
-
-    # each rank only trains/tests on its own subset of the k test folds
-    my_test_folds = fold_labels[rank::1]
-    print(f'[rank {rank}] assigned test folds: {list(my_test_folds)}')
 
     test_dfs = []
     for test_idx in my_test_folds:
