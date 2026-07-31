@@ -70,7 +70,7 @@ def plot_data(df, save_folder = 'gaia-data/plots/patch'):
     c.ax.set_title('Counts', fontsize=8)
 
     if save_folder is not None:
-        plt.savefig(os.path.join(save_folder, "alldataplots.png"))
+        fig.savefig(os.path.join(save_folder, "alldataplots.png"))
 
     df_stream = df[df['stream']==True]
 
@@ -104,7 +104,7 @@ def plot_data(df, save_folder = 'gaia-data/plots/patch'):
     c.ax.set_title('Counts', fontsize=8)
 
     if save_folder is not None:
-        plt.savefig(os.path.join(save_folder, "streamdataplots.png"))
+        fig.savefig(os.path.join(save_folder, "streamdataplots.png"))
 
 
 
@@ -159,24 +159,25 @@ def signal_sideband(df, pm_parameter='rotpmdec', sig_factor=0.25, sb_factor=0.5,
         print(f'Sideband Region has {len(df_sb_region)} stars, {len(df_sb_region_stream)} stream and {len(df_sb_region_background)} background.')
         print(f'Outer Region has {len(df_outer_region)} stars, {len(df_outer_region_stream)} stream and {len(df_outer_region_background)} background.')
 
-        bins = np.linspace(sb_low - (sig_low - sb_low), sb_high + (sb_high - sig_high), bin_num)
-        plt.hist(df_sig_region_stream[pm_parameter], label='Signal Region', color='red', alpha=1, bins=bins)
-        plt.hist(df_sb_region_stream[pm_parameter], label='Sideband Region', color='red', alpha=0.5, bins=bins)
-        plt.hist(df_outer_region_stream[pm_parameter], label='Outer Region', color='red', alpha=0.25, bins=bins)
-        plt.xlabel(f'{pm_name} [mas/yr]')
-        plt.ylabel('Number of Stars')
-        plt.title('Stream Stars in Patch')
-        plt.legend()
-        plt.show()
-        plt.hist(df_sig_region_background[pm_parameter], label='Signal Region', color='grey', alpha=1, bins=bins)
-        plt.hist(df_sb_region_background[pm_parameter], label='Sideband Region', color='grey', alpha=0.5, bins=bins)
-        plt.hist(df_outer_region_background[pm_parameter], label='Outer Region', color='grey', alpha=0.25, bins=bins)
-        plt.xlabel(f'{pm_name} [mas/yr]')
-        plt.ylabel('Number of Stars')
-        plt.title('Background Stars in Patch')
-        plt.legend()
-        plt.show()
-
+    bins = np.linspace(sb_low - (sig_low - sb_low), sb_high + (sb_high - sig_high), bin_num)
+    plt.hist(df_sig_region_stream[pm_parameter], label='Signal Region', color='red', alpha=1, bins=bins)
+    plt.hist(df_sb_region_stream[pm_parameter], label='Sideband Region', color='red', alpha=0.5, bins=bins)
+    plt.hist(df_outer_region_stream[pm_parameter], label='Outer Region', color='red', alpha=0.25, bins=bins)
+    plt.xlabel(f'{pm_name} [mas/yr]')
+    plt.ylabel('Number of Stars')
+    plt.title('Stream Stars in Patch')
+    plt.legend()
+    
+    plt.hist(df_sig_region_background[pm_parameter], label='Signal Region', color='grey', alpha=1, bins=bins)
+    plt.hist(df_sb_region_background[pm_parameter], label='Sideband Region', color='grey', alpha=0.5, bins=bins)
+    plt.hist(df_outer_region_background[pm_parameter], label='Outer Region', color='grey', alpha=0.25, bins=bins)
+    plt.xlabel(f'{pm_name} [mas/yr]')
+    plt.ylabel('Number of Stars')
+    plt.title('Background Stars in Patch')
+    plt.legend()
+    if save_folder is not None:
+        plt.savefig(os.path.join(save_folder, "pmdistribution.png"))
+            
     return df_regions
 
 
@@ -449,28 +450,15 @@ def get_results(df, top_n=250, fid_cuts=True save_folder='../results/streams/pat
 
     # purity and completeness
     purity, completeness = compute_purity_and_completeness(df, top_n=top_n)
-    print(f'Top {top_n} ranked stars: Purity = {purity*100}%')
-    print(f'Top {top_n} ranked stars: Completeness = {completeness*100}%')
+    print(f'Top {top_n} ranked stars: Purity = {purity*100:.2f}%')
+    print(f'Top {top_n} ranked stars: Completeness = {completeness*100:.2f}%')
 
     # plot cwola stars on top of gaia stars
-
-    plt.scatter(df_streamstar['ra'], df_streamstar['dec'], label='GD-1 Stars', color='grey', marker='.', s=5)
-    plt.scatter(df_top['ra'], df_top['dec'], label=f'Top Ranked CWoLa Stars, purity = {purity*100}%', color='blue', marker='.', s=5)
-    df_top_stream = df_top[df_top['stream']==True]    
-    plt.scatter(df_top_stream['ra'], df_top_stream['dec'], label = 'Matches', color='red', marker='.', s=5)
-    plt.xlabel('Rotated Right Ascension ϕ [°]')
-    plt.ylabel('Rotated Declination λ [°]')
-    plt.legend()
-    plt.savefig(os.path.join(save_folder, "topnstars.png"))
-    plt.close()
-
-    
     df_top_signal = df_top[df_top['stream']==True]
     df_top_background = df_top[df_top['stream']==False]
 
-    # plot cwola stars on top of gaia stars
     fig, axes = plt.subplots(1, 3, figsize=(15, 5), tight_layout=True)
-    fig.suptitle(f'Patch 0: CWoLa Top Matches, purity = {purity*100:.3f}%')
+    fig.suptitle(f'Patch 0: CWoLa Top Matches, purity = {purity*100:.2f}%')
     
     axes[0].scatter(df_streamstar['ra'], df_streamstar['dec'], label='GD-1 Stars', color='grey', marker='.', s=5)
     axes[0].scatter(df_top_signal['ra'], df_top_signal['dec'], label='CWoLa Matches', color='red', marker='.', s=5)
@@ -492,7 +480,8 @@ def get_results(df, top_n=250, fid_cuts=True save_folder='../results/streams/pat
     axes[2].set_ylabel('Magnitude g', fontsize = 10)
 
     plt.tight_layout()
-    fig.savefig
+    fig.savefig(os.path.join(save_folder, "finalstars.png"))
+    plt.close()
 
 
 
