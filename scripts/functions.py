@@ -26,15 +26,6 @@ def load_data(patch_idx):
     return df
 
 
-def fiducial_cuts(df): 
-    # CWOLA Stellar Stream fiducial cuts https://arxiv.org/pdf/2305.03761
-    df = df[df['g'] < 20.2] # ensures uniform acceptance by Gaia satellite
-    df = df[(np.abs(df['rotpmdec']) > 2) | (np.abs(df['rotpmra']) > 2)] # remove distant stars concentrated near zero proper motion, not equally distributed throughout patch
-    df = df[(df['b-r'] >= 0.5) & (df['b-r'] <=1 )] # isolates old and low-metallicity stellar streams in color space
-    return df
-
-
-
 def plot_data(df, save_folder = 'gaia-data/plots/patch'):
 
     if save_folder is not None:
@@ -110,7 +101,9 @@ def plot_data(df, save_folder = 'gaia-data/plots/patch'):
 
 # define signal sideband region
 
-def signal_sideband(df, pm_parameter='rotpmdec', sig_factor=0.25, sb_factor=0.5, bin_num=55, verbose=True):
+def signal_sideband(df, save_folder = 'results/stream/patch/plots', pm_parameter='rotpmdec', sig_factor=0.25, sb_factor=0.5, bin_num=55, verbose=True):
+    if save_folder is not None:
+        os.makedirs(save_folder, exist_ok=True)
 
     if pm_parameter == 'rotpmdec':
         pm_name = 'Rotated and Centered Proper Motion (DEC) μ_λ'
@@ -182,7 +175,7 @@ def signal_sideband(df, pm_parameter='rotpmdec', sig_factor=0.25, sb_factor=0.5,
 
 
 
-def cwola_train(df, pm_parameter='rotpmdec', dropout=0.2, k_folds=5, batch_size=10000, lr=0.001, patience=30, epochs=100, trainval_loops=3, save_folder='../results/streams/patch', wandbproj='sim-1patch', device=None, rank=0):
+def cwola_train(df, pm_parameter='rotpmdec', dropout=0.2, k_folds=5, batch_size=10000, lr=0.001, patience=30, epochs=100, trainval_loops=3, save_folder='../results/stream/patch', wandbproj='sim-1patch', device=None, rank=0):
 
     use_wandb = wandbproj is not None
 
@@ -403,6 +396,13 @@ def cwola_train(df, pm_parameter='rotpmdec', dropout=0.2, k_folds=5, batch_size=
     return df_test_full
 
 
+def fiducial_cuts(df): # CWOLA Stellar Stream fiducial cuts https://arxiv.org/pdf/2305.03761
+    df = df[df['g'] < 20.2] # ensures uniform acceptance by Gaia satellite
+    df = df[(np.abs(df['rotpmdec']) > 2) | (np.abs(df['rotpmra']) > 2)] # remove distant stars concentrated near zero proper motion, not equally distributed throughout patch
+    df = df[(df['b-r'] >= 0.5) & (df['b-r'] <=1 )] # isolates old and low-metallicity stellar streams in color space
+    return df
+
+
 def compute_purity_and_completeness(df, top_n=250):
     df_ranked = df.sort_values(by='nn_score', ascending=False)
     df_top = df_ranked[:top_n]
@@ -411,7 +411,7 @@ def compute_purity_and_completeness(df, top_n=250):
     return purity, completeness
 
 
-def get_results(df, top_n=250, fid_cuts=True save_folder='../results/streams/patch/plots'):
+def get_results(df, top_n=250, fid_cuts=True save_folder='../results/streams/patch'):
 
     if fid_cuts:
         df = fiducial_cuts(df)
@@ -483,10 +483,7 @@ def get_results(df, top_n=250, fid_cuts=True save_folder='../results/streams/pat
     fig.savefig(os.path.join(save_folder, "finalstars.png"))
     plt.close()
 
-
-
     
-
 
 
 
