@@ -388,7 +388,7 @@ def cwola_train(df, pm_parameter='rotpmdec', dropout=0.2, k_folds=5, batch_size=
                     counts += region_labels.size(0)
             
             test_nn_scores.append(raw_scores)
-            print(f'Test scores saved for test fold {test_idx}.')
+            print(f'Test scores saved for test fold {test_idx} val fold {val_idx}.')
 
         print('Averaging nn_scores for each star from the 4 best models...')
         df_test['nn_score'] = np.mean(test_nn_scores, axis=0)
