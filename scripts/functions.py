@@ -158,6 +158,10 @@ def signal_sideband(df, save_folder = '../results/stream/patch', pm_parameter='r
     plt.ylabel('Number of Stars')
     plt.title('Stream Stars in Patch')
     plt.legend()
+    plt.show()
+    plt.close()
+    if save_folder is not None:
+        plt.savefig(os.path.join(save_folder, "pmstreamdistribution.png"))
     
     plt.hist(df_sig_region_background[pm_parameter], label='Signal Region', color='grey', alpha=1, bins=bins)
     plt.hist(df_sb_region_background[pm_parameter], label='Sideband Region', color='grey', alpha=0.5, bins=bins)
@@ -166,8 +170,10 @@ def signal_sideband(df, save_folder = '../results/stream/patch', pm_parameter='r
     plt.ylabel('Number of Stars')
     plt.title('Background Stars in Patch')
     plt.legend()
+    plt.show()
+    plt.close()
     if save_folder is not None:
-        plt.savefig(os.path.join(save_folder, "pmdistribution.png"))
+        plt.savefig(os.path.join(save_folder, "pmbackgrounddistribution.png"))
             
     return df_regions
 
