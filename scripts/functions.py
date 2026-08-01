@@ -12,7 +12,7 @@ from sklearn.cluster import KMeans
 import copy
 import wandb
 import os
-import tqdm
+from tqdm import tqdm
 
 
 
