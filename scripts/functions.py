@@ -208,6 +208,7 @@ def cwola_train(df, pm_parameter='rotpmdec', dropout=0.2, k_folds=5, batch_size=
             return self.NeuralNetwork(x)
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    print(f'Using device: {device}')
 
     # k-folding
     skf = StratifiedKFold(n_splits=k_folds, shuffle=True, random_state=18)
@@ -351,7 +352,7 @@ def cwola_train(df, pm_parameter='rotpmdec', dropout=0.2, k_folds=5, batch_size=
                         patience_counter += 1
                 
                     if patience_counter >= patience:
-                        print("Early stopping")
+                        print(f"Early stopping at epoch {epoch}")
                         break
                 
                 if best_val_loss < best_loop_val_loss:
@@ -385,7 +386,7 @@ def cwola_train(df, pm_parameter='rotpmdec', dropout=0.2, k_folds=5, batch_size=
             test_nn_scores.append(raw_scores)
             print(f'Test scores saved for test fold {test_idx}.')
 
-        print('Averaging nn_scores for each star from the 4 folds' best models...')
+        print('Averaging nn_scores for each star from the 4 best models...')
         df_test['nn_score'] = np.mean(test_nn_scores, axis=0)
         test_dfs.append(df_test)
 
@@ -417,9 +418,10 @@ def get_results(df, top_n=250, fid_cuts=True, save_folder='../results/streams/pa
     if fid_cuts:
         df = fiducial_cuts(df)
         os.makedirs(os.path.join(save_folder, 'fid_cuts'), exist_ok=True)
-
+        print('Plotting after fiducial cuts...')
     else:
         os.makedirs(os.path.join(save_folder, 'no_fid_cuts'), exist_ok=True)
+        print('Plotting before fiducial cuts..')
     
     df_signalreg = df[df['region_label']==1]
     df_backgroundreg = df[df['region_label']==0]
