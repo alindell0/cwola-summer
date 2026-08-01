@@ -284,7 +284,7 @@ def cwola_train(df, pm_parameter='rotpmdec', dropout=0.2, k_folds=5, batch_size=
             test_nn_scores = []
             
             for n in range(trainval_loops):
-                print(f'Starting training loop {n}')
+                print(f'Starting training loop {n+1}')
 
                 # initialize model
                 if use_wandb:
