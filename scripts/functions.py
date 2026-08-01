@@ -151,6 +151,7 @@ def signal_sideband(df, save_folder = '../results/stream/patch', pm_parameter='r
     print(f'Outer Region has {len(df_outer_region)} stars, {len(df_outer_region_stream)} stream and {len(df_outer_region_background)} background.')
 
     bins = np.linspace(sb_low - (sig_low - sb_low), sb_high + (sb_high - sig_high), bin_num)
+    plt.figure()
     plt.hist(df_sig_region_stream[pm_parameter], label='Signal Region', color='red', alpha=1, bins=bins)
     plt.hist(df_sb_region_stream[pm_parameter], label='Sideband Region', color='red', alpha=0.5, bins=bins)
     plt.hist(df_outer_region_stream[pm_parameter], label='Outer Region', color='red', alpha=0.25, bins=bins)
@@ -158,11 +159,10 @@ def signal_sideband(df, save_folder = '../results/stream/patch', pm_parameter='r
     plt.ylabel('Number of Stars')
     plt.title('Stream Stars in Patch')
     plt.legend()
-    plt.show()
-    plt.close()
     if save_folder is not None:
         plt.savefig(os.path.join(save_folder, "pmstreamdistribution.png"))
-    
+
+    plt.figure()
     plt.hist(df_sig_region_background[pm_parameter], label='Signal Region', color='grey', alpha=1, bins=bins)
     plt.hist(df_sb_region_background[pm_parameter], label='Sideband Region', color='grey', alpha=0.5, bins=bins)
     plt.hist(df_outer_region_background[pm_parameter], label='Outer Region', color='grey', alpha=0.25, bins=bins)
@@ -170,8 +170,6 @@ def signal_sideband(df, save_folder = '../results/stream/patch', pm_parameter='r
     plt.ylabel('Number of Stars')
     plt.title('Background Stars in Patch')
     plt.legend()
-    plt.show()
-    plt.close()
     if save_folder is not None:
         plt.savefig(os.path.join(save_folder, "pmbackgrounddistribution.png"))
             
@@ -225,7 +223,7 @@ def cwola_train(df, pm_parameter='rotpmdec', dropout=0.2, k_folds=5, batch_size=
     fold_labels = np.arange(len(fold_stars)) # fold labels is an array of values 0-4, representing indices/labels of the 5 folds
 
     test_dfs = []
-    for test_idx in my_test_folds:
+    for test_idx in fold_labels:
         print(f'Test fold {test_idx}...')
         
         test_stars = fold_stars[test_idx]
