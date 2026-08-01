@@ -298,7 +298,7 @@ def cwola_train(df, pm_parameter='rotpmdec', dropout=0.2, k_folds=5, batch_size=
                 best_val_loss = float('inf')
                 patience_counter = 0
                 
-                for epoch in tqdm(range(num_epochs), desc="Epoch {epoch}")
+                for epoch in tqdm(range(num_epochs), desc="Epoch {epoch}"):
                 
                     # training
                     model.train()
