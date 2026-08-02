@@ -506,33 +506,3 @@ def train_on_patch(patch_idx, scan_var, fid_cuts):
                              save_folder=f'../results/patch_{patch_idx}/training', wandbproj=None)
     get_results(df_test_full, top_n=250, fid_cuts=fid_cuts, save_folder=f'../results/patch_{patch_idx}', patch_idx=patch_idx)
 
-
-
-    
-
-### cleaning up and converting raw .npy data to .h5, functions from Dr. Pettee's repo https://github.com/hep-lbdl/GaiaCWoLa/tree/main
-
-def angular_distance(angle1,angle2): # via_machinae function https://arxiv.org/abs/2104.12789
-    # inputs are np arrays of [ra,dec]
-    deltara=np.minimum(np.minimum(np.abs(angle1[:,0]-angle2[:,0]+360),
-                                  np.abs(angle1[:,0]-angle2[:,0])),
-                                  np.abs(angle1[:,0]-angle2[:,0]-360))
-    deltadec=np.abs(angle1[:,1]-angle2[:,1])
-    return np.sqrt(deltara**2+deltadec**2)
-# function that cross checks GD-1 stars with raw patch data, returns boolean array
-def FilterGD1(stars, gd1_stars):
-    gd1stars=np.zeros(len(stars))
-    for x in tqdm(gd1_stars):
-        ra=x['ra']
-        dec=x['dec']
-        pmra=x['pmra']
-        pmdec=x['pmdec']
-        foundlist=angular_distance(np.dstack((stars[:,3],stars[:,2]))[0],np.array([[ra,dec]]))
-        foundlist=np.sqrt(foundlist**2+(stars[:,0]-pmdec)**2+(stars[:,1]-pmra)**2)   
-        foundlist=foundlist<.0001
-        if len(np.argwhere(foundlist))>1:
-            print(foundlist)
-        if len(np.argwhere(foundlist))==1:
-            gd1stars+=foundlist
-    gd1stars=gd1stars.astype('bool')
-    return gd1stars,stars[gd1stars]
