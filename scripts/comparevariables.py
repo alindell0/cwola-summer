@@ -3,8 +3,9 @@ import torch
 
 from functions import *
 
-def compare_variables(var1='rotpmdec', var2='rotpmra'):
-  
+train_on_patch(patch_idx=0, scan_var='rotpmdec')
+
+train_on_patch(patch_idx=0, scan_var='rotpmra')
 
   
   
