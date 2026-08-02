@@ -492,9 +492,21 @@ def get_results(df, top_n=250, fid_cuts=True, save_folder='../results/streams/pa
     fig.savefig(os.path.join(save_folder, "finalstars.png"))
     plt.close()
 
+
+### full training function
+def train_on_patch(patch_idx, scan_var):
+  df = load_data(patch_idx)
+  plot_data(df, save_folder = f'../gaia-data/plots/patch_{patch_idx}')
+  df_regions = signal_sideband(df, save_folder = f'../results/patch_{patch_idx}/{scan_var}', 
+                               pm_parameter=scan_var, sig_factor=1, sb_factor=3)
+  df_test_full = cwola_train(df, pm_parameter=scan_var', dropout=0.2, k_folds=5, batch_size=10000, 
+                             lr=0.001, patience=30, epochs=100, trainval_loops=3, 
+                             save_folder=f'../results/patch_{patch_idx}/training', wandbproj=None)
+  get_results(df_test_full, top_n=250, fid_cuts=True, save_folder=f'../results/patch_{patch_idx}')
+
+
+
     
-
-
 
 ### cleaning up and converting raw .npy data to .h5, functions from Dr. Pettee's repo https://github.com/hep-lbdl/GaiaCWoLa/tree/main
 
@@ -506,7 +518,6 @@ def angular_distance(angle1,angle2): # via_machinae function https://arxiv.org/a
     deltadec=np.abs(angle1[:,1]-angle2[:,1])
     return np.sqrt(deltara**2+deltadec**2)
 # function that cross checks GD-1 stars with raw patch data, returns boolean array
-
 def FilterGD1(stars, gd1_stars):
     gd1stars=np.zeros(len(stars))
     for x in tqdm(gd1_stars):
