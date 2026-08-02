@@ -18,6 +18,10 @@ def train_on_patch(patch_idx, scan_var, fid_cuts):
 
 ## reproducibility with rotpmdec, ## comparison with rotpmra
 
+### for gpu ???
+# rewrite idx = SLURM_ARRAY_TASK_ID 
+# array=0-20 in job submission
+
 top_dfs = []
 gd1stars_dfs = []
 for idx in tqdm(range(21), desc='Patch'):
