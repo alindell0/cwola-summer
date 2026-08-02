@@ -417,7 +417,7 @@ def compute_purity_and_completeness(df, top_n=250):
     return purity, completeness
 
 
-def get_results(df, top_n=250, fid_cuts=True, save_folder='../results/streams/patch'):
+def get_results(df, top_n=250, fid_cuts=True, save_folder='../results/streams/patch', patch_idx=patch_idx):
 
     if fid_cuts:
         df = fiducial_cuts(df)
@@ -467,7 +467,7 @@ def get_results(df, top_n=250, fid_cuts=True, save_folder='../results/streams/pa
     df_top_background = df_top[df_top['stream']==False]
 
     fig, axes = plt.subplots(1, 3, figsize=(15, 5), tight_layout=True)
-    fig.suptitle(f'Patch 0: CWoLa Top Matches, purity = {purity*100:.2f}%')
+    fig.suptitle(f'Patch {patch_idx}: CWoLa Top Matches, purity = {purity*100:.2f}%')
     
     axes[0].scatter(df_streamstar['ra'], df_streamstar['dec'], label='GD-1 Stars', color='grey', marker='.', s=5)
     axes[0].scatter(df_top_signal['ra'], df_top_signal['dec'], label='CWoLa Matches', color='red', marker='.', s=5)
@@ -497,13 +497,14 @@ def get_results(df, top_n=250, fid_cuts=True, save_folder='../results/streams/pa
 def train_on_patch(patch_idx, scan_var, fid_cuts):
     print(f'Training Patch {patch_idx} with signal parameter {scan_var}...')
     df = load_data(patch_idx)
+    df['patch'] = patch_idx
     plot_data(df, save_folder = f'../gaia-data/plots/patch_{patch_idx}')
     df_regions = signal_sideband(df, save_folder = f'../results/patch_{patch_idx}/{scan_var}', 
                                pm_parameter=scan_var, sig_factor=1, sb_factor=3)
     df_test_full = cwola_train(df, pm_parameter=scan_var', dropout=0.2, k_folds=5, batch_size=10000, 
                              lr=0.001, patience=30, epochs=100, trainval_loops=3, 
                              save_folder=f'../results/patch_{patch_idx}/training', wandbproj=None)
-    get_results(df_test_full, top_n=250, fid_cuts=fid_cuts, save_folder=f'../results/patch_{patch_idx}')
+    get_results(df_test_full, top_n=250, fid_cuts=fid_cuts, save_folder=f'../results/patch_{patch_idx}', patch_idx=patch_idx)
 
 
 
