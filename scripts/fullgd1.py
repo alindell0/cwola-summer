@@ -37,3 +37,6 @@ top_stars = pd.concat([df for df in top_dfs])
 gd1_stars = pd.concat([df for df in gd1stars_dfs])
 
 # drop duplicates, plotting, etc
+
+# compare final top stars non gd-1 after euclidean distance cutoff to those from paper? or reproduced with og pm param
+
