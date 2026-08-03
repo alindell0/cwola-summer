@@ -27,12 +27,45 @@ for i in range(len(scan_vars)):
     
     top_stars = top_stars.drop_duplicates(ignore_index=True)
     top_stream_stars = top_stars[top_stars['stream']==True]
+    top_background_stars = top_stars[top_stars['stream']==False]
     gd1_stars = gd1_stars.drop_duplicates(ignore_index=True)
 
     print(f'Total number of unique CWoLa top stars = {len(top_stars)}')
     print(f'Total number of true stream stars of the unique CWoLa top stars = {len(top_stream_stars)}/{len(top_stars)} ({len(top_stream_stars)/len(top_stars)*100:.2f}%)')
 
-# plotting, etc
+    save_folder = f'../results/fullgd1/{scan_var}/raw'
+    
+    plt.figure()
+    plt.scatter(gd1_stars['ra'], gd1_stars['dec'], label='GD-1 Stars', color='grey', marker='.', s=5)
+    plt.scatter(top_stream_stars['ra'], top_stream_stars['dec'], label='CWoLa Matches', color='red', marker='.', s=5)
+    plt.scatter(top_background_stars['ra'], top_background_stars['dec'], label='CWoLa Non-Matches', color='blue', marker='.', s=5)
+    plt.set_xlabel('Right Ascension α [°]', fontsize = 10)
+    plt.set_ylabel('Declination δ [°]', fontsize = 10)
+    plt.legend()
+    plt.savefig(os.path.join(save_folder, "position.png"))
+    plt.close()
+    
+    fig, axes = plt.subplots(1, 2, figsize=(10, 4), tight_layout=True)    
+    axes[0].scatter(gd1_stars['rotpmra'], gd1_stars['rotpmdec'], label='GD-1 Stars', color='grey', marker='.', s=5)
+    axes[0].scatter(top_stream_stars['rotpmra'], top_stream_stars['rotpmdec'], label='CWoLa Matches', color='red', marker='.', s=5)
+    axes[0].scatter(top_background_stars['rotpmra'], top_background_stars['rotpmdec'], label='CWoLa Non-Matches', color='blue', marker='.', s=5)
+    axes[0].set_xlabel('Rotated Proper Motion (Right Ascension) μ_ϕcosλ [mas/yr]', fontsize = 10)
+    axes[0].set_ylabel('Rotated Proper Motion (Declination) μ_λ [mas/yr]', fontsize = 10)
+
+    axes[1].scatter(gd1_stars['b-r'], gd1_stars['g'], label='GD-1 Stars', color='grey', marker='.', s=5)
+    axes[1].scatter(top_stream_stars['b-r'], top_stream_stars['g'], label='CWoLa Matches', color='red', marker='.', s=5)
+    axes[1].scatter(top_background_stars['b-r'], top_background_stars['g'], label='CWoLa Non-Matches', color='blue', marker='.', s=5)
+    axes[1].set_xlabel('Color b-r', fontsize = 10)
+    axes[1].set_ylabel('Magnitude g', fontsize = 10)
+
+    fig.savefig(os.path.join(save_folder, "pm_photometric.png"))
+    plt.close()
+
+    ## kmeans here !!!!!
+
+    save_folder = f'../results/fullgd1/{scan_var}/k_means'
+
+
 # compare final top stars non gd-1 after euclidean distance cutoff to those from paper? or reproduced with og pm param
 
 
