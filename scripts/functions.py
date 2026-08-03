@@ -93,7 +93,7 @@ def plot_data(df, save_folder = '../gaia-data/plots/patch'):
 
 
 
-def signal_sideband(df, save_folder = '../results/stream/patch', pm_parameter='rotpmdec', sig_factor=1, sb_factor=3, bin_num=55):
+def signal_sideband(df, save_folder = '../results/stream/patch', pm_parameter='rotpmdec', sig_factor=1, sb_factor=3, bin_num=51):
     if save_folder is not None:
         os.makedirs(save_folder, exist_ok=True)
 
@@ -144,27 +144,25 @@ def signal_sideband(df, save_folder = '../results/stream/patch', pm_parameter='r
     print(f'Outer Region has {len(df_outer_region)} stars, {len(df_outer_region_stream)} stream and {len(df_outer_region_background)} background.')
 
     bins = np.linspace(sb_low - (sig_low - sb_low), sb_high + (sb_high - sig_high), bin_num)
-    plt.figure()
-    plt.hist(df_sig_region_stream[pm_parameter], label='Signal Region', color='red', alpha=1, bins=bins)
-    plt.hist(df_sb_region_stream[pm_parameter], label='Sideband Region', color='red', alpha=0.5, bins=bins)
-    plt.hist(df_outer_region_stream[pm_parameter], label='Outer Region', color='red', alpha=0.25, bins=bins)
-    plt.xlabel(f'{pm_name} [mas/yr]')
-    plt.ylabel('Number of Stars')
-    plt.title('Stream Stars in Patch')
-    plt.legend()
-    if save_folder is not None:
-        plt.savefig(os.path.join(save_folder, "pmstreamdistribution.png"))
+    fig, axes = plt.subplots(1, 2, figsize=(10, 4), tight_layout=True)    
+    axes[0].hist(df_sig_region_stream[pm_parameter], label='Signal Region', color='red', alpha=1, bins=bins)
+    axes[0].hist(df_sb_region_stream[pm_parameter], label='Sideband Region', color='red', alpha=0.5, bins=bins)
+    axes[0].hist(df_outer_region_stream[pm_parameter], label='Outer Region', color='red', alpha=0.25, bins=bins)
+    axes[0].set_xlabel(f'{pm_name} [mas/yr]')
+    axes[0].set_ylabel('Number of Stars')
+    axes[0].set_title('Stream Stars in Patch')
+    axes[0].legend()
 
-    plt.figure()
-    plt.hist(df_sig_region_background[pm_parameter], label='Signal Region', color='grey', alpha=1, bins=bins)
-    plt.hist(df_sb_region_background[pm_parameter], label='Sideband Region', color='grey', alpha=0.5, bins=bins)
-    plt.hist(df_outer_region_background[pm_parameter], label='Outer Region', color='grey', alpha=0.25, bins=bins)
-    plt.xlabel(f'{pm_name} [mas/yr]')
-    plt.ylabel('Number of Stars')
-    plt.title('Background Stars in Patch')
-    plt.legend()
+    axes[1].hist(df_sig_region_background[pm_parameter], label='Signal Region', color='grey', alpha=1, bins=bins)
+    axes[1].hist(df_sb_region_background[pm_parameter], label='Sideband Region', color='grey', alpha=0.5, bins=bins)
+    axes[1].hist(df_outer_region_background[pm_parameter], label='Outer Region', color='grey', alpha=0.25, bins=bins)
+    axes[1].set_xlabel(f'{pm_name} [mas/yr]')
+    axes[1].set_ylabel('Number of Stars')
+    axes[1].set_title('Background Stars in Patch')
+    axes[1].legend()
+    
     if save_folder is not None:
-        plt.savefig(os.path.join(save_folder, "pmbackgrounddistribution.png"))
+        plt.savefig(os.path.join(save_folder, "pmdistributions.png"))
             
     return df_regions
 
