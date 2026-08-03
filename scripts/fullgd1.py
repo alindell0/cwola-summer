@@ -41,7 +41,11 @@ for i in range(len(scan_vars)):
     gd1_stars = pd.concat([df for df in gd1stars_dfs])
     
     top_stars = top_stars.drop_duplicates(ignore_index=True)
+    top_stream_stars = top_stars[top_stars['stream']==True]
     gd1_stars = gd1_stars.drop_duplicates(ignore_index=True)
+
+    print(f'Total number of unique CWoLa top stars = {len(top_stars)}')
+    print(f'Total number of true stream stars of the unique CWoLa top stars = {len(top_stream_stars)}/{len(top_stars)} ({len(top_stream_stars)/len(top_stars)*100:.2f}%)')
 
 # plotting, etc
 # compare final top stars non gd-1 after euclidean distance cutoff to those from paper? or reproduced with og pm param
