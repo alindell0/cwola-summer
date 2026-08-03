@@ -17,9 +17,11 @@ def train_on_patch(patch_idx, scan_var, fid_cuts):
     get_results(df_test_full, top_n=250, fid_cuts=fid_cuts, save_folder=f'../results/patch_{patch_idx}/{scan_var}', patch_idx=patch_idx)
 
 
-train_on_patch(patch_idx=0, scan_var='rotpmdec', fid_cuts=True)
+scan_vars = ['rotpmdec', 'rotpmra']
 
-train_on_patch(patch_idx=0, scan_var='rotpmra', fid_cuts=True)
+for i in range(len(scan_vars)):
+    scan_var = scan_vars[i]
+    train_on_patch(patch_idx=0, scan_var=scan_var, fid_cuts=True)
 
   
   
