@@ -15,12 +15,9 @@ import os
 from tqdm import tqdm
 
 
-
-### loading .h5 file
-
 def load_data(patch_idx):
 
-    # load the .h5 data file into a dataframe, uses patch index (0-20)
+    # load the cleaned .h5 data file into a dataframe, uses patch index (0-20)
     df = pd.read_hdf(f"../gaia-data/cleaned-data/gd1_patch{patch_idx}.h5")
     print(f"Data for Patch {patch_idx}")
     return df
@@ -31,7 +28,7 @@ def plot_data(df, save_folder = '../gaia-data/plots/patch'):
     if save_folder is not None:
         os.makedirs(save_folder, exist_ok=True)
 
-    # create figure with 1 row and 3 columns for data subplots
+    # create figure with 3 sublots for input data of all stars
     fig, axes = plt.subplots(1, 3, figsize=(15, 5), tight_layout=True)
     fig.suptitle('Full Patch')
     color = 'Greys'
@@ -52,7 +49,7 @@ def plot_data(df, save_folder = '../gaia-data/plots/patch'):
     c = fig.colorbar(h[3], ax=axes[1])
     c.ax.set_title('Counts', fontsize=8)
 
-    # plot photometric figures
+    # plot photometric features
     binsfeat = (np.linspace(0,3,100), np.linspace(10,21,100))
     h = axes[2].hist2d(df['b-r'], df['g'], bins=binsfeat, cmap=color, cmin=0)
     axes[2].set_xlabel('Color b-r', fontsize = 10)
@@ -65,12 +62,11 @@ def plot_data(df, save_folder = '../gaia-data/plots/patch'):
 
     df_stream = df[df['stream']==True]
 
-    # create figure with 1 row and 3 columns for data subplots
+    # create figure with 3 sublots for input data of stream stars
     fig, axes = plt.subplots(1, 3, figsize=(15, 5), tight_layout=True)
     fig.suptitle('Labeled Stream Stars')
     color = 'Reds'
 
-    # plot position coordinates
     binspos = (np.linspace(-15,15,100), np.linspace(-15,15,100))
     h = axes[0].hist2d(df_stream['rotra'], df_stream['rotdec'], bins=binspos, cmap=color, cmin=0)
     axes[0].set_xlabel('Rotated Right Ascension ϕ [°]', fontsize = 10)
@@ -78,7 +74,6 @@ def plot_data(df, save_folder = '../gaia-data/plots/patch'):
     c = fig.colorbar(h[3], ax=axes[0])
     c.ax.set_title('Counts', fontsize=8)
 
-    # plot proper motion coordinates
     binspm = (np.linspace(-20,20,100), np.linspace(-20,20,100))
     h = axes[1].hist2d(df_stream['rotpmra'], df_stream['rotpmdec'], bins=binspm, cmap=color, cmin=0)
     axes[1].set_xlabel('Rotated Proper Motion (Right Ascension) μ_ϕcosλ [mas/yr]', fontsize = 10)
@@ -86,7 +81,6 @@ def plot_data(df, save_folder = '../gaia-data/plots/patch'):
     c = fig.colorbar(h[3], ax=axes[1])
     c.ax.set_title('Counts', fontsize=8)
 
-    # plot photometric figures
     binsfeat = (np.linspace(0,3,100), np.linspace(10,21,100))
     h = axes[2].hist2d(df_stream['b-r'], df_stream['g'], bins=binsfeat, cmap=color, cmin=0)
     axes[2].set_xlabel('Color b-r', fontsize = 10)
@@ -99,12 +93,11 @@ def plot_data(df, save_folder = '../gaia-data/plots/patch'):
 
 
 
-# define signal sideband region
-
 def signal_sideband(df, save_folder = '../results/stream/patch', pm_parameter='rotpmdec', sig_factor=1, sb_factor=3, bin_num=55):
     if save_folder is not None:
         os.makedirs(save_folder, exist_ok=True)
 
+    # what parameter the signal and sideband regions will be defined from
     if pm_parameter == 'rotpmdec':
         pm_name = 'Rotated and Centered Proper Motion (DEC) μ_λ'
     if pm_parameter == 'rotpmra':
@@ -183,7 +176,7 @@ def cwola_train(df, pm_parameter='rotpmdec', dropout=0.2, k_folds=5, batch_size=
 
     os.makedirs(save_folder, exist_ok=True)
 
-    # training variables
+    # denotes training variables, separate from proper motion parameter used to define signal/sideband regions
     if pm_parameter == 'rotpmdec':
         training_vars = ['b-r', 'g', 'rotra', 'rotdec', 'rotpmra']
         print('Proper Motion Parameter: Rotated and Centered Proper Motion (DEC) μ_λ')
@@ -217,29 +210,27 @@ def cwola_train(df, pm_parameter='rotpmdec', dropout=0.2, k_folds=5, batch_size=
     # k-folding
     skf = StratifiedKFold(n_splits=k_folds, shuffle=True, random_state=18)
 
-    fold_stars = [] # will be a list of k (5) arrays, representing the k folds
+    fold_stars = [] # will become a list of k (5) arrays, representing the k folds
     for fold_idx, (train_index, test_index) in enumerate(skf.split(df[training_vars], df['region_label'])):
         fold_stars.append(test_index)
     fold_labels = np.arange(len(fold_stars)) # fold labels is an array of values 0-4, representing indices/labels of the 5 folds
 
     test_dfs = []
-    for test_idx in fold_labels:
+    for test_idx in fold_labels: # loops through each fold as the test fold
         print(f'Test fold {test_idx}...')
         
         test_stars = fold_stars[test_idx]
         save_folder_test = os.path.join(save_folder, "test_fold_{}".format(test_idx))
         os.makedirs(save_folder_test, exist_ok=True)
 
-        # cycles through remaining sets (minus the test set) for validation sets
-        for val_idx in np.delete(fold_labels, test_idx):
+        for val_idx in np.delete(fold_labels, test_idx): # cycles through remaining sets (minus the test set) for validation sets
             print(f'Validation fold {val_idx}...')
             val_stars = fold_stars[val_idx]
     
             train_indices = np.delete(fold_labels, [test_idx, val_idx])
             train_stars = np.concatenate([fold_stars[train_idx] for train_idx in train_indices])
     
-            # create data frames with indices
-            df_train = df.iloc[train_stars]
+            df_train = df.iloc[train_stars] # create data frames with indices
             df_val = df.iloc[val_stars]
             df_test = df.iloc[test_stars]
     
@@ -253,8 +244,7 @@ def cwola_train(df, pm_parameter='rotpmdec', dropout=0.2, k_folds=5, batch_size=
             test_y = df_test['region_label'].to_numpy()
             test_y_true = df_test['stream'].to_numpy(dtype=int)
 
-            # scale data
-            scaler = StandardScaler()
+            scaler = StandardScaler() # scale data to standardize with mean of 0 and standard deviation of 1
             
             train_x = scaler.fit_transform(train_x) # fit_transform called only on train data
             val_x = scaler.transform(val_x)
@@ -283,10 +273,9 @@ def cwola_train(df, pm_parameter='rotpmdec', dropout=0.2, k_folds=5, batch_size=
 
             test_nn_scores = []
             
-            for n in range(trainval_loops):
+            for n in range(trainval_loops): # trains the model trainval_loops number of times (equal to the number of remaining folds, used as training)
                 print(f'Starting training loop {n+1}')
 
-                # initialize model
                 if use_wandb:
                     run = wandb.init(project=wandbproj,
                                 group=f"fold_{test_idx}",
@@ -294,6 +283,8 @@ def cwola_train(df, pm_parameter='rotpmdec', dropout=0.2, k_folds=5, batch_size=
                                 name=f"test_{test_idx}_val_{val_idx}_train_{n}",
                                 config={"test_fold": test_idx, "val_set": val_idx, "train_loop": n},
                                 reinit=True)
+                    
+                # initialize model upon each training loop
                 model = NeuralNetwork(input_dim = 5, hidden_dim = 256, output_dim = 1, dropout=dropout).to(device)
                 model = torch.compile(model)
                 loss_fn = nn.BCELoss()
@@ -302,7 +293,7 @@ def cwola_train(df, pm_parameter='rotpmdec', dropout=0.2, k_folds=5, batch_size=
                 best_val_loss = float('inf')
                 patience_counter = 0
                 
-                for epoch in tqdm(range(epochs), desc="Epoch"):
+                for epoch in tqdm(range(epochs), desc=f"Training loop {n}"):
                 
                     # training
                     model.train()
@@ -312,8 +303,8 @@ def cwola_train(df, pm_parameter='rotpmdec', dropout=0.2, k_folds=5, batch_size=
                     
                     for inputs, region_labels in train_loader:
                         optimizer.zero_grad()
-                        out = model(inputs).squeeze(1)
-                        loss = loss_fn(out, region_labels)
+                        out = model(inputs).squeeze(1) # forward pass
+                        loss = loss_fn(out, region_labels) # compute loss
                         loss.backward()
                         optimizer.step()
                         total_train_loss += loss.detach() * inputs.size(0)
@@ -325,15 +316,15 @@ def cwola_train(df, pm_parameter='rotpmdec', dropout=0.2, k_folds=5, batch_size=
                     avg_train_loss = (total_train_loss / counts).item()  
                     train_accuracy = (train_correct / counts).item()
                     
-                    # validation
+                    # validation, used to track loss/accuracy, monitor for early stopping
                     model.eval()
                     total_val_loss = torch.tensor(0.0, device=device)
                     val_correct = torch.tensor(0.0, device=device)
                     counts = 0
                     with torch.no_grad():
                         for inputs, region_labels in val_loader:
-                            out = model(inputs).squeeze(1)  # forward pass
-                            loss = loss_fn(out, region_labels)  # compute loss
+                            out = model(inputs).squeeze(1)
+                            loss = loss_fn(out, region_labels)
                             total_val_loss += loss.detach() * inputs.size(0)
                     
                             predictions = (out > 0.5).float()
@@ -370,7 +361,7 @@ def cwola_train(df, pm_parameter='rotpmdec', dropout=0.2, k_folds=5, batch_size=
             model_save_path = os.path.join(save_folder_test, "val_set_{}_best_model".format(val_idx))
             torch.save(lowest_val_loss_model, model_save_path) ## model parameters from training run with the lowest validation loss
 
-            model.load_state_dict(lowest_val_loss_model)
+            model.load_state_dict(lowest_val_loss_model) ## test set evaluated on the best model from each of the 4 validation sets
 
             model.eval()
             test_loss, test_correct, counts = 0.0, 0.0, 0
