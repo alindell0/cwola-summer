@@ -1,5 +1,4 @@
 import torch
-%pip install tqdm
 
 from functions import *
 
