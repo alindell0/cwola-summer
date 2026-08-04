@@ -406,7 +406,7 @@ def compute_purity_and_completeness(df, top_n=250):
     return purity, completeness
 
 
-def get_results(df, top_n=250, fid_cuts=True, save_folder='../results/streams/patch', patch_idx=patch_idx):
+def get_results(df, top_n=250, fid_cuts=True, save_folder='../results/streams/patch', patch_idx=0):
 
     if fid_cuts:
         df = fiducial_cuts(df)
