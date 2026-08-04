@@ -215,6 +215,8 @@ def cwola_train(df, pm_parameter='rotpmdec', dropout=0.2, k_folds=5, batch_size=
 
     test_dfs = []
     for test_idx in fold_labels: # loops through each fold as the test fold
+        print('-----------------------------------------------')
+        print(' ')
         print(f'Test fold {test_idx}...')
         
         test_stars = fold_stars[test_idx]
@@ -284,14 +286,13 @@ def cwola_train(df, pm_parameter='rotpmdec', dropout=0.2, k_folds=5, batch_size=
                     
                 # initialize model upon each training loop
                 model = NeuralNetwork(input_dim = 5, hidden_dim = 256, output_dim = 1, dropout=dropout).to(device)
-                model = torch.compile(model)
                 loss_fn = nn.BCELoss()
                 optimizer = torch.optim.Adam(model.parameters(), lr=lr)
     
                 best_val_loss = float('inf')
                 patience_counter = 0
                 
-                for epoch in tqdm(range(epochs), desc=f"Training loop {n}"):
+                for epoch in tqdm(range(epochs), desc=f"Training loop {n+1}"):
                 
                     # training
                     model.train()
@@ -337,7 +338,7 @@ def cwola_train(df, pm_parameter='rotpmdec', dropout=0.2, k_folds=5, batch_size=
                                  "train_acc": train_accuracy, "val_acc": val_accuracy, "epoch": epoch})
 
                     # early stopping
-                    if avg_val_loss < best_val_loss:
+                    if avg_val_loss < best_val_loss - 0.0001:
                         best_val_loss = avg_val_loss
                         patience_counter = 0
                         best_model = copy.deepcopy(model.state_dict())
@@ -345,7 +346,7 @@ def cwola_train(df, pm_parameter='rotpmdec', dropout=0.2, k_folds=5, batch_size=
                         patience_counter += 1
                 
                     if patience_counter >= patience:
-                        print(f"Early stopping at epoch {epoch}")
+                        print(f"Early stopping at epoch {epoch} with average val_loss {avg_val_loss}")
                         break
                 
                 if best_val_loss < best_loop_val_loss:
@@ -369,12 +370,11 @@ def cwola_train(df, pm_parameter='rotpmdec', dropout=0.2, k_folds=5, batch_size=
                 for inputs, region_labels, true_labels in test_loader:
                     out = model(inputs).squeeze()
                     raw_scores.extend(out.squeeze().cpu().numpy())
-                    loss = loss_fn(out, region_labels)
-                    test_loss += loss.item() * inputs.size(0)
-            
-                    scores = (out > 0.5).float()
-                    test_correct += (scores == region_labels).sum().item()
-                    counts += region_labels.size(0)
+                    # loss = loss_fn(out, region_labels)
+                    # test_loss += loss.item() * inputs.size(0)
+                    # scores = (out > 0.5).float()
+                    # test_correct += (scores == region_labels).sum().item()
+                    # counts += region_labels.size(0)
             
             test_nn_scores.append(raw_scores)
             print(f'Test scores saved for test fold {test_idx} val fold {val_idx}.')
