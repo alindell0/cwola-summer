@@ -3,15 +3,13 @@
 *.fits
 *.npy
 *.h5
+*.pyc
+*.sh
 gaia-data/
 wandb/
 __pycache__/
-*.pyc
-*.tar.gz
-*.sh
-*.sub
 logs/
-results/
+check0/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
