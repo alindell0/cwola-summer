@@ -5,6 +5,8 @@
 *.h5
 *.pyc
 *.sh
+test_fold_*/
+val_set_*
 gaia-data/
 wandb/
 __pycache__/
