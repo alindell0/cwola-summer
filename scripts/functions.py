@@ -92,7 +92,6 @@ def plot_data(df, save_folder = '../gaia-data/plots/patch'):
         fig.savefig(os.path.join(save_folder, "streamdataplots.png"))
 
 
-
 def signal_sideband(df, save_folder = '../results/stream/patch', pm_parameter='rotpmdec', sig_factor=1, sb_factor=3, bin_num=51):
     if save_folder is not None:
         os.makedirs(save_folder, exist_ok=True)
@@ -165,7 +164,6 @@ def signal_sideband(df, save_folder = '../results/stream/patch', pm_parameter='r
         plt.savefig(os.path.join(save_folder, "pmdistributions.png"))
             
     return df_regions
-
 
 
 def cwola_train(df, pm_parameter='rotpmdec', dropout=0.2, k_folds=5, batch_size=10000, lr=0.001, patience=30, epochs=100, trainval_loops=3, save_folder='../results/stream/patch', wandbproj='sim-1patch'):
@@ -410,10 +408,10 @@ def get_results(df, top_n=250, fid_cuts=True, save_folder='../results/streams/pa
 
     if fid_cuts:
         df = fiducial_cuts(df)
-        os.makedirs(os.path.join(save_folder, 'fid_cuts'), exist_ok=True)
+        save_folder = os.makedirs(os.path.join(save_folder, 'fid_cuts'), exist_ok=True)
         print('Plotting after fiducial cuts...')
     else:
-        os.makedirs(os.path.join(save_folder, 'no_fid_cuts'), exist_ok=True)
+        save_folder = os.makedirs(os.path.join(save_folder, 'no_fid_cuts'), exist_ok=True)
         print('Plotting before fiducial cuts..')
     
     df_signalreg = df[df['region_label']==1]
@@ -492,6 +490,7 @@ def train_on_patch(patch_idx, scan_var, fid_cuts):
                                pm_parameter=scan_var, sig_factor=1, sb_factor=3)
     df_test_full = cwola_train(df_regions, pm_parameter=scan_var, dropout=0.2, k_folds=5, batch_size=10000,
                              lr=0.001, patience=30, epochs=100, trainval_loops=3, 
-                             save_folder=f'../results/patch_{patch_idx}/training', wandbproj=None)
-    get_results(df_test_full, top_n=250, fid_cuts=fid_cuts, save_folder=f'../results/patch_{patch_idx}', patch_idx=patch_idx)
+                             save_folder=f'../results/patch_{patch_idx}/{scan_var}/training', wandbproj=None)
+    get_results(df_test_full, top_n=250, fid_cuts=fid_cuts, save_folder=f'../results/patch_{patch_idx}/{scan_var}', patch_idx=patch_idx)
+
 
