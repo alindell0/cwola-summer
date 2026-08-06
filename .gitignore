@@ -5,9 +5,8 @@
 *.h5
 *.pyc
 *.sh
-test_fold_*/
-val_set_*
 gaia-data/
+training/
 wandb/
 __pycache__/
 logs/

@@ -12,7 +12,7 @@ from sklearn.cluster import KMeans
 import copy
 import wandb
 import os
-from tqdm import tqdm
+from tqdm.auto import tqdm
 
 
 def load_data(patch_idx):
@@ -166,7 +166,7 @@ def signal_sideband(df, save_folder = '../results/stream/patch', pm_parameter='r
     return df_regions
 
 
-def cwola_train(df, pm_parameter='rotpmdec', dropout=0.2, k_folds=5, batch_size=10000, lr=0.001, patience=30, epochs=100, trainval_loops=3, save_folder='../results/stream/patch', wandbproj='sim-1patch'):
+def cwola_train(df, pm_parameter='rotpmdec', dropout=0.2, k_folds=5, batch_size=10000, lr=0.001, patience=30, epochs=100, trainval_loops=3, save_folder='../results/patch/training', wandbproj=None):
 
     use_wandb = wandbproj is not None
 
@@ -290,7 +290,7 @@ def cwola_train(df, pm_parameter='rotpmdec', dropout=0.2, k_folds=5, batch_size=
                 best_val_loss = float('inf')
                 patience_counter = 0
                 
-                for epoch in tqdm(range(epochs), desc=f"Training loop {n+1}"):
+                for epoch in tqdm(range(epochs), desc='Epochs'):
                 
                     # training
                     model.train()
@@ -298,7 +298,10 @@ def cwola_train(df, pm_parameter='rotpmdec', dropout=0.2, k_folds=5, batch_size=
                     train_correct = torch.tensor(0.0, device=device)
                     counts = 0
                     
-                    for inputs, region_labels in train_loader:
+                    for inputs, region_labels in tqdm(train_loader, desc='train batches', leave=False):
+                        inputs = inputs.to(device)
+                        region_labels = region_labels.to(device)
+
                         optimizer.zero_grad()
                         out = model(inputs).squeeze(1) # forward pass
                         loss = loss_fn(out, region_labels) # compute loss
@@ -320,6 +323,9 @@ def cwola_train(df, pm_parameter='rotpmdec', dropout=0.2, k_folds=5, batch_size=
                     counts = 0
                     with torch.no_grad():
                         for inputs, region_labels in val_loader:
+                            inputs = inputs.to(device)
+                            region_labels = region_labels.to(device)
+                            
                             out = model(inputs).squeeze(1)
                             loss = loss_fn(out, region_labels)
                             total_val_loss += loss.detach() * inputs.size(0)
@@ -336,7 +342,7 @@ def cwola_train(df, pm_parameter='rotpmdec', dropout=0.2, k_folds=5, batch_size=
                                  "train_acc": train_accuracy, "val_acc": val_accuracy, "epoch": epoch})
 
                     # early stopping
-                    if avg_val_loss < best_val_loss - 0.0001:
+                    if avg_val_loss < best_val_loss:
                         best_val_loss = avg_val_loss
                         patience_counter = 0
                         best_model = copy.deepcopy(model.state_dict())
@@ -365,14 +371,11 @@ def cwola_train(df, pm_parameter='rotpmdec', dropout=0.2, k_folds=5, batch_size=
             raw_scores = []
             
             with torch.no_grad():
-                for inputs, region_labels, true_labels in test_loader:
+                for inputs, region_labels, true_labels in tqdm(test_loader, desc='test batches', leave=False):
+                    inputs = inputs.to(device)
+                    region_labels = region_labels.to(device)
                     out = model(inputs).squeeze()
                     raw_scores.extend(out.squeeze().cpu().numpy())
-                    # loss = loss_fn(out, region_labels)
-                    # test_loss += loss.item() * inputs.size(0)
-                    # scores = (out > 0.5).float()
-                    # test_correct += (scores == region_labels).sum().item()
-                    # counts += region_labels.size(0)
             
             test_nn_scores.append(raw_scores)
             print(f'Test scores saved for test fold {test_idx} val fold {val_idx}.')
@@ -408,10 +411,12 @@ def get_results(df, top_n=250, fid_cuts=True, save_folder='../results/streams/pa
 
     if fid_cuts:
         df = fiducial_cuts(df)
-        save_folder = os.makedirs(os.path.join(save_folder, 'fid_cuts'), exist_ok=True)
+        save_folder = os.path.join(save_folder, 'fid_cuts')
+        os.makedirs(save_folder, exist_ok=True)
         print('Plotting after fiducial cuts...')
     else:
-        save_folder = os.makedirs(os.path.join(save_folder, 'no_fid_cuts'), exist_ok=True)
+        save_folder = os.path.join(save_folder, 'no_fid_cuts')
+        os.makedirs(save_folder, exist_ok=True)
         print('Plotting before fiducial cuts..')
     
     df_signalreg = df[df['region_label']==1]
