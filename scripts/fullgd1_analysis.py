@@ -1,5 +1,6 @@
 from functions import *
 import pandas as pd
+from scipy.spatial import distance_matrix
 
 ## reproducibility with rotpmdec and comparison with rotpmra
 
@@ -24,12 +25,21 @@ for i in range(len(scan_vars)):
   top_stars = pd.concat([df for df in top_dfs])
   gd1_stars = pd.concat([df for df in gd1stars_dfs])
 
-  df.to_hdf(f'../results/fullgd1/{scan_var}/raw/top_stars.h5', key='top_stars', mode='w')
+  top_stars.to_hdf(f'../results/fullgd1/{scan_var}/raw/top_stars.h5', key='top_stars', mode='w')
+
+  # to check if neural network scores are the same or different between duplicates
+  if scan_var == 'rotpmdec':
+    check_cols = ['b-r', 'g', 'ra', 'dec', 'pmra']
+  if scan_var == 'rotpmra':
+    check_cols = ['b-r', 'g', 'ra', 'dec', 'pmdec']
+  duplicate_rows = top_stars[top_stars.duplicated(subset=check_cols, keep=False)].sort_values(by=check_cols)
+  print(f'Duplicate rows found: {len(duplicate_rows)}')
+  print(duplicate_rows)
   
-  top_stars = top_stars.drop_duplicates(ignore_index=True)
+  top_stars = top_stars.drop_duplicates(subset=check_cols,ignore_index=True)
   top_stream_stars = top_stars[top_stars['stream']==True]
   top_background_stars = top_stars[top_stars['stream']==False]
-  gd1_stars = gd1_stars.drop_duplicates(ignore_index=True)
+  gd1_stars = gd1_stars.drop_duplicates(subset=check_cols,ignore_index=True)
 
   print(f'Total number of unique CWoLa top stars = {len(top_stars)}')
   print(f'Total number of true stream stars of the unique CWoLa top stars = {len(top_stream_stars)}/{len(top_stars)} ({len(top_stream_stars)/len(top_stars)*100:.2f}%)')
@@ -128,6 +138,34 @@ for i in range(len(scan_vars)):
   # top_stars top cwola star selections, gd1_stars all gd_1 stars
   # use euclidean distances to refine the number of non-stream stars in the top cluster for augmented stream labeling
 
+  # normalize the input data
+  if scan_var == 'rotpmdec':
+      inputs = ['b-r', 'g', 'rotra', 'rotdec', 'rotpmra']
+      inputs_normalized = ['b-r_normalized', 'g_normalized', 'rotra_normalized', 'rotdec_normalized', 'rotpmra_normalized']
+  if scan_var == 'rotpmra':
+      inputs = ['b-r', 'g', 'rotra', 'rotdec', 'rotpmdec']
+      inputs_normalized = ['b-r_normalized', 'g_normalized', 'rotra_normalized', 'rotdec_normalized', 'rotpmdec_normalized']
+
+  for input in inputs:
+      top_stars[f'{input}_normalized'] = (top_stars[input] - top_stars[input].mean()) / top_stars[input].std()
+
+  # split stream stars and non-labeled stars in all top stars
+  true_stream = top_stars[top_stars['stream']==True]
+  potential_stream = top_stars[top_stars['stream']==False]
+
+  # calculate distances: distance_matrix
+  all_distances = distance_matrix(true_stream[inputs_normalized].to_numpy(), potential_stream[inputs_normalized].to_numpy())
+  closest_stream_star = true_stream.iloc[all_distances.argmin(axis=0)]
+  deltas = potential_stream[inputs_normalized].to_numpy()-closest_stream_star[inputs_normalized].to_numpy()
+  distances = np.sqrt(np.sum(deltas**2, axis=1))
+  potential_stream['5d_distance'] = distances
+
+  # separate top 10% closest stars to the stream stars as promising GD-1 candidates
+  promising = potential_stream[(potential_stream['5d_distance'] < potential_stream['5d_distance'].quantile(0.1))]
+  print(f"{len(promising)} promising GD-1 candidate stars found with pm {scan_var}.")
+  promising = promising.sort_values('nn_score',ascending=False)
+  promising.reset_index(inplace=True, drop=True)
+  promising.to_hdf(f'../results/fullgd1/{scan_var}/promising_stars.h5', key='promising_stars', mode='w')
 
 
 
@@ -135,8 +173,6 @@ for i in range(len(scan_vars)):
 
 
 
-# compare final top stars non gd-1 after euclidean distance cutoff to those from paper? or reproduced with og pm param
 
 
-## comparison with rotpmra
 

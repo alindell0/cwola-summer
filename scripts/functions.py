@@ -298,7 +298,7 @@ def cwola_train(df, pm_parameter='rotpmdec', dropout=0.2, k_folds=5, batch_size=
                     train_correct = torch.tensor(0.0, device=device)
                     counts = 0
                     
-                    for inputs, region_labels in tqdm(train_loader, desc='train batches', leave=False):
+                    for inputs, region_labels in train_loader:
                         inputs = inputs.to(device)
                         region_labels = region_labels.to(device)
 
@@ -371,7 +371,7 @@ def cwola_train(df, pm_parameter='rotpmdec', dropout=0.2, k_folds=5, batch_size=
             raw_scores = []
             
             with torch.no_grad():
-                for inputs, region_labels, true_labels in tqdm(test_loader, desc='test batches', leave=False):
+                for inputs, region_labels, true_labels in test_loader:
                     inputs = inputs.to(device)
                     region_labels = region_labels.to(device)
                     out = model(inputs).squeeze()
@@ -483,6 +483,25 @@ def get_results(df, top_n=250, fid_cuts=True, save_folder='../results/streams/pa
     plt.tight_layout()
     fig.savefig(os.path.join(save_folder, "finalstars.png"))
     plt.close()
+
+
+def compute_auc(df, save_folder='../results/patch_0/scan_var/training', patch_idx=0):
+    from sklearn.metrics import roc_auc_score, average_precision_score
+
+    os.makedirs(save_folder, exist_ok=True)
+
+    auc = roc_auc_score(df['stream'].astype(int), df['nn_score'])
+    ap = average_precision_score(df['stream'].astype(int), df['nn_score'])
+
+    print(f'Patch {patch_idx} AUC: {auc:.3f}')
+    print(f'Patch {patch_idx} Average Precision: {ap:.3f}')
+
+    with open(os.path.join(save_folder, "auc_results.txt"), 'w') as f:
+        f.write(f'Patch {patch_idx} AUC: {auc:.3f}\n')
+        f.write(f'Patch {patch_idx} Average Precision: {ap:.3f}\n')
+
+
+
 
 
 ### full training function
