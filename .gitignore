@@ -12,6 +12,7 @@ __pycache__/
 logs/
 check0/
 results/
+notebooks/check/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
