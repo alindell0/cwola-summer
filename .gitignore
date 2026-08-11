@@ -5,15 +5,12 @@
 *.h5
 *.pyc
 *.sh
-gaia-data/
+*.png
 training/
 wandb/
 __pycache__/
-logs/
-check0/
 results/
 results1/
-notebooks/check/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
