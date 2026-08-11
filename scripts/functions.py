@@ -8,7 +8,7 @@ from torch import nn
 from torch.utils.data import DataLoader, TensorDataset
 from sklearn.model_selection import StratifiedKFold
 from sklearn.preprocessing import StandardScaler
-from sklearn.cluster import KMeans
+from sklearn.metrics import roc_auc_score, average_precision_score
 import copy
 import wandb
 import os
@@ -221,6 +221,7 @@ def cwola_train(df, pm_parameter='rotpmdec', dropout=0.2, k_folds=5, batch_size=
         save_folder_test = os.path.join(save_folder, "test_fold_{}".format(test_idx))
         os.makedirs(save_folder_test, exist_ok=True)
 
+        test_nn_scores = []
         for val_idx in np.delete(fold_labels, test_idx): # cycles through remaining sets (minus the test set) for validation sets
             print(f'Validation fold {val_idx}...')
             val_stars = fold_stars[val_idx]
@@ -268,8 +269,6 @@ def cwola_train(df, pm_parameter='rotpmdec', dropout=0.2, k_folds=5, batch_size=
             test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
 
             best_loop_val_loss = float('inf')
-
-            test_nn_scores = []
             
             for n in range(trainval_loops): # trains the model trainval_loops number of times (equal to the number of remaining folds, used as training)
                 print(f'Starting training loop {n+1}')
@@ -426,6 +425,7 @@ def get_results(df, top_n=250, fid_cuts=True, save_folder='../results/streams/pa
     df_backgroundstar = df[df['stream']==False]
 
     # NN scores
+    plt.figure()
     plt.hist(df_signalreg['nn_score'], label='Signal Region', histtype='step', bins=50)
     plt.hist(df_backgroundreg['nn_score'], label='Background Region', histtype='step', bins=50)
     plt.xlabel('NN Score')
@@ -434,6 +434,7 @@ def get_results(df, top_n=250, fid_cuts=True, save_folder='../results/streams/pa
     plt.savefig(os.path.join(save_folder, "nnscoreregions.png"))
     plt.close()
 
+    plt.figure()
     plt.hist(df_streamstar['nn_score'], label='Stream Stars', color='red', histtype='step', bins=50)
     plt.hist(df_backgroundstar['nn_score'], label='Background Stars', color='grey', histtype='step', bins=50)
     plt.yscale('log')
@@ -485,21 +486,12 @@ def get_results(df, top_n=250, fid_cuts=True, save_folder='../results/streams/pa
     plt.close()
 
 
-def compute_auc(df, save_folder='../results/patch_0/scan_var/training', patch_idx=0):
-    from sklearn.metrics import roc_auc_score, average_precision_score
-
-    os.makedirs(save_folder, exist_ok=True)
-
+def auc_ap_check(df):
     auc = roc_auc_score(df['stream'].astype(int), df['nn_score'])
-    ap = average_precision_score(df['stream'].astype(int), df['nn_score'])
-
-    print(f'Patch {patch_idx} AUC: {auc:.3f}')
-    print(f'Patch {patch_idx} Average Precision: {ap:.3f}')
-
-    with open(os.path.join(save_folder, "auc_results.txt"), 'w') as f:
-        f.write(f'Patch {patch_idx} AUC: {auc:.3f}\n')
-        f.write(f'Patch {patch_idx} Average Precision: {ap:.3f}\n')
-
+    print(f"AUC: {auc:.3f}")
+    ap = average_precision_score(df['stream'].astype(int), df['nn_score'])   ## better for datasets with class imbalance, very rare signal
+    print(f"Average Precision: {ap:.3f}")
+    return auc, ap
 
 
 
