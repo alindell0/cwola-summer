@@ -1,0 +1,159 @@
+Training Patch 0 with signal parameter rotpmra with 50 epochs to check purity...
+Training Patch 0 with signal parameter rotpmra...
+Data for Patch 0
+Signal parameter: Rotated and Centered Proper Motion (RA) μ_ϕcosλ
+Signal region factor = 1 and sideband region factor = 3
+Signal parameter median = -2.912
+Signal parameter standard deviation = 0.943
+Signal Region Range: [-3.856, -1.969]
+Sideband Region Range: [-5.743, -3.856) and (-1.969, -0.082]
+Signal Region has 363129 stars, 261 stream and 362868 background.
+Sideband Region has 776360 stars, 117 stream and 776243 background.
+Outer Region has 1051703 stars, 0 stream and 1051703 background.
+Proper Motion Parameter: Rotated and Centered Proper Motion (RA) μ_ϕcosλ
+Using device: cuda
+-----------------------------------------------
+ 
+Test fold 0...
+Validation fold 1...
+Starting training loop 1
+Starting training loop 2
+Starting training loop 3
+Best validation loss for validation fold label 1 = 0.6117472052574158
+Test scores saved for test fold 0 val fold 1.
+Validation fold 2...
+Starting training loop 1
+Starting training loop 2
+Starting training loop 3
+Best validation loss for validation fold label 2 = 0.6120390295982361
+Test scores saved for test fold 0 val fold 2.
+Validation fold 3...
+Starting training loop 1
+Starting training loop 2
+Starting training loop 3
+Best validation loss for validation fold label 3 = 0.6110137701034546
+Test scores saved for test fold 0 val fold 3.
+Validation fold 4...
+Starting training loop 1
+Starting training loop 2
+Starting training loop 3
+Best validation loss for validation fold label 4 = 0.6121511459350586
+Test scores saved for test fold 0 val fold 4.
+Averaging nn_scores for each star from the 4 best models...
+-----------------------------------------------
+ 
+Test fold 1...
+Validation fold 0...
+Starting training loop 1
+Starting training loop 2
+Starting training loop 3
+Best validation loss for validation fold label 0 = 0.6112710237503052
+Test scores saved for test fold 1 val fold 0.
+Validation fold 2...
+Starting training loop 1
+Starting training loop 2
+Starting training loop 3
+Best validation loss for validation fold label 2 = 0.6120496988296509
+Test scores saved for test fold 1 val fold 2.
+Validation fold 3...
+Starting training loop 1
+Starting training loop 2
+Starting training loop 3
+Best validation loss for validation fold label 3 = 0.6108810901641846
+Test scores saved for test fold 1 val fold 3.
+Validation fold 4...
+Starting training loop 1
+Starting training loop 2
+Starting training loop 3
+Best validation loss for validation fold label 4 = 0.6120294332504272
+Test scores saved for test fold 1 val fold 4.
+Averaging nn_scores for each star from the 4 best models...
+-----------------------------------------------
+ 
+Test fold 2...
+Validation fold 0...
+Starting training loop 1
+Starting training loop 2
+Starting training loop 3
+Best validation loss for validation fold label 0 = 0.6112809181213379
+Test scores saved for test fold 2 val fold 0.
+Validation fold 1...
+Starting training loop 1
+Starting training loop 2
+Starting training loop 3
+Best validation loss for validation fold label 1 = 0.6117491126060486
+Test scores saved for test fold 2 val fold 1.
+Validation fold 3...
+Starting training loop 1
+Starting training loop 2
+Starting training loop 3
+Best validation loss for validation fold label 3 = 0.6110478043556213
+Test scores saved for test fold 2 val fold 3.
+Validation fold 4...
+Starting training loop 1
+Starting training loop 2
+Starting training loop 3
+Best validation loss for validation fold label 4 = 0.6121424436569214
+Test scores saved for test fold 2 val fold 4.
+Averaging nn_scores for each star from the 4 best models...
+-----------------------------------------------
+ 
+Test fold 3...
+Validation fold 0...
+Starting training loop 1
+Starting training loop 2
+Starting training loop 3
+Best validation loss for validation fold label 0 = 0.6112393736839294
+Test scores saved for test fold 3 val fold 0.
+Validation fold 1...
+Starting training loop 1
+Starting training loop 2
+Starting training loop 3
+Best validation loss for validation fold label 1 = 0.6117532849311829
+Test scores saved for test fold 3 val fold 1.
+Validation fold 2...
+Starting training loop 1
+Starting training loop 2
+Starting training loop 3
+Best validation loss for validation fold label 2 = 0.6120084524154663
+Test scores saved for test fold 3 val fold 2.
+Validation fold 4...
+Starting training loop 1
+Starting training loop 2
+Starting training loop 3
+Best validation loss for validation fold label 4 = 0.6120441555976868
+Test scores saved for test fold 3 val fold 4.
+Averaging nn_scores for each star from the 4 best models...
+-----------------------------------------------
+ 
+Test fold 4...
+Validation fold 0...
+Starting training loop 1
+Starting training loop 2
+Starting training loop 3
+Best validation loss for validation fold label 0 = 0.6112698316574097
+Test scores saved for test fold 4 val fold 0.
+Validation fold 1...
+Starting training loop 1
+Starting training loop 2
+Starting training loop 3
+Best validation loss for validation fold label 1 = 0.6118205189704895
+Test scores saved for test fold 4 val fold 1.
+Validation fold 2...
+Starting training loop 1
+Starting training loop 2
+Starting training loop 3
+Best validation loss for validation fold label 2 = 0.612018883228302
+Test scores saved for test fold 4 val fold 2.
+Validation fold 3...
+Starting training loop 1
+Starting training loop 2
+Starting training loop 3
+Best validation loss for validation fold label 3 = 0.6108020544052124
+Test scores saved for test fold 4 val fold 3.
+Averaging nn_scores for each star from the 4 best models...
+Full test df with all stars saved!
+Plotting after fiducial cuts...
+Top 250 ranked stars: Purity = 61.60%
+Top 250 ranked stars: Completeness = 50.16%
+All done!

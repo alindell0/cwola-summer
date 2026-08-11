@@ -1,0 +1,166 @@
+[patch 5] CUDA_VISIBLE_DEVICES = 0
+[patch 5] torch.cuda.device_count() = 1
+[patch 5] device name = NVIDIA A100-SXM4-40GB
+Training Patch 5 with signal parameter rotpmdec...
+Data for Patch 5
+Signal parameter: Rotated and Centered Proper Motion (DEC) μ_λ
+Signal region factor = 1 and sideband region factor = 3
+Signal parameter median = -12.445
+Signal parameter standard deviation = 1.299
+Signal Region Range: [-13.745, -11.146]
+Sideband Region Range: [-16.343, -13.745) and (-11.146, -8.547]
+Signal Region has 48796 stars, 304 stream and 48492 background.
+Sideband Region has 114805 stars, 69 stream and 114736 background.
+Outer Region has 1097069 stars, 8 stream and 1097061 background.
+Proper Motion Parameter: Rotated and Centered Proper Motion (DEC) μ_λ
+Using device: cuda
+-----------------------------------------------
+ 
+Test fold 0...
+Validation fold 1...
+Starting training loop 1
+Starting training loop 2
+Starting training loop 3
+Best validation loss for validation fold label 1 = 0.6060559749603271
+Test scores saved for test fold 0 val fold 1.
+Validation fold 2...
+Starting training loop 1
+Starting training loop 2
+Starting training loop 3
+Best validation loss for validation fold label 2 = 0.6068021655082703
+Test scores saved for test fold 0 val fold 2.
+Validation fold 3...
+Starting training loop 1
+Starting training loop 2
+Starting training loop 3
+Best validation loss for validation fold label 3 = 0.6063942909240723
+Test scores saved for test fold 0 val fold 3.
+Validation fold 4...
+Starting training loop 1
+Starting training loop 2
+Starting training loop 3
+Best validation loss for validation fold label 4 = 0.6070942282676697
+Test scores saved for test fold 0 val fold 4.
+Averaging nn_scores for each star from the 4 best models...
+-----------------------------------------------
+ 
+Test fold 1...
+Validation fold 0...
+Starting training loop 1
+Starting training loop 2
+Starting training loop 3
+Best validation loss for validation fold label 0 = 0.6069619059562683
+Test scores saved for test fold 1 val fold 0.
+Validation fold 2...
+Starting training loop 1
+Starting training loop 2
+Starting training loop 3
+Best validation loss for validation fold label 2 = 0.6067167520523071
+Test scores saved for test fold 1 val fold 2.
+Validation fold 3...
+Starting training loop 1
+Starting training loop 2
+Starting training loop 3
+Best validation loss for validation fold label 3 = 0.6065937280654907
+Test scores saved for test fold 1 val fold 3.
+Validation fold 4...
+Starting training loop 1
+Starting training loop 2
+Starting training loop 3
+Early stopping at epoch 98 with average val_loss 0.607109785079956
+Best validation loss for validation fold label 4 = 0.6071008443832397
+Test scores saved for test fold 1 val fold 4.
+Averaging nn_scores for each star from the 4 best models...
+-----------------------------------------------
+ 
+Test fold 2...
+Validation fold 0...
+Starting training loop 1
+Starting training loop 2
+Starting training loop 3
+Best validation loss for validation fold label 0 = 0.6071562767028809
+Test scores saved for test fold 2 val fold 0.
+Validation fold 1...
+Starting training loop 1
+Starting training loop 2
+Starting training loop 3
+Best validation loss for validation fold label 1 = 0.6063486933708191
+Test scores saved for test fold 2 val fold 1.
+Validation fold 3...
+Starting training loop 1
+Starting training loop 2
+Starting training loop 3
+Best validation loss for validation fold label 3 = 0.6071127653121948
+Test scores saved for test fold 2 val fold 3.
+Validation fold 4...
+Starting training loop 1
+Early stopping at epoch 81 with average val_loss 0.607927680015564
+Starting training loop 2
+Starting training loop 3
+Best validation loss for validation fold label 4 = 0.6064322590827942
+Test scores saved for test fold 2 val fold 4.
+Averaging nn_scores for each star from the 4 best models...
+-----------------------------------------------
+ 
+Test fold 3...
+Validation fold 0...
+Starting training loop 1
+Starting training loop 2
+Starting training loop 3
+Best validation loss for validation fold label 0 = 0.6068415641784668
+Test scores saved for test fold 3 val fold 0.
+Validation fold 1...
+Starting training loop 1
+Starting training loop 2
+Starting training loop 3
+Early stopping at epoch 86 with average val_loss 0.6066222190856934
+Best validation loss for validation fold label 1 = 0.606535792350769
+Test scores saved for test fold 3 val fold 1.
+Validation fold 2...
+Starting training loop 1
+Starting training loop 2
+Starting training loop 3
+Best validation loss for validation fold label 2 = 0.6067318916320801
+Test scores saved for test fold 3 val fold 2.
+Validation fold 4...
+Starting training loop 1
+Early stopping at epoch 72 with average val_loss 0.6073306798934937
+Starting training loop 2
+Starting training loop 3
+Best validation loss for validation fold label 4 = 0.6069076061248779
+Test scores saved for test fold 3 val fold 4.
+Averaging nn_scores for each star from the 4 best models...
+-----------------------------------------------
+ 
+Test fold 4...
+Validation fold 0...
+Starting training loop 1
+Starting training loop 2
+Starting training loop 3
+Best validation loss for validation fold label 0 = 0.6066237092018127
+Test scores saved for test fold 4 val fold 0.
+Validation fold 1...
+Starting training loop 1
+Early stopping at epoch 75 with average val_loss 0.6067023873329163
+Starting training loop 2
+Starting training loop 3
+Best validation loss for validation fold label 1 = 0.6062461137771606
+Test scores saved for test fold 4 val fold 1.
+Validation fold 2...
+Starting training loop 1
+Starting training loop 2
+Starting training loop 3
+Best validation loss for validation fold label 2 = 0.6064904928207397
+Test scores saved for test fold 4 val fold 2.
+Validation fold 3...
+Starting training loop 1
+Starting training loop 2
+Starting training loop 3
+Best validation loss for validation fold label 3 = 0.6066045761108398
+Test scores saved for test fold 4 val fold 3.
+Averaging nn_scores for each star from the 4 best models...
+Full test df with all stars saved!
+Plotting after fiducial cuts...
+Top 250 ranked stars: Purity = 63.60%
+Top 250 ranked stars: Completeness = 52.30%
+All done!
