@@ -12,6 +12,7 @@ __pycache__/
 results/
 results1/
 patch_*/
+logs/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
