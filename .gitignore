@@ -5,7 +5,6 @@
 *.npy
 *.h5
 *.pyc
-*.sh
 *.log
 gaia-data/
 training/
