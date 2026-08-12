@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH -A m4474
+#SBATCH -A m****
 #SBATCH --constraint=gpu
 #SBATCH --qos=shared
 #SBATCH --nodes=1
