@@ -6,11 +6,11 @@
 *.h5
 *.pyc
 *.sh
-*.png
+*.log
+gaia-data/
 training/
 wandb/
 __pycache__/
-results/
 results1/
 patch_*/
 logs/
