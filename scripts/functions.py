@@ -250,23 +250,23 @@ def cwola_train(df, pm_parameter='rotpmdec', dropout=0.2, k_folds=5, batch_size=
             test_x = scaler.transform(test_x)
                     
             # create tensors, datasets, and loaders
-            train_x_tensor = torch.tensor(np.array(train_x), dtype=torch.float32, device=device)
-            train_y_tensor = torch.tensor(train_y, dtype=torch.float32, device=device)
+            train_x_tensor = torch.tensor(np.array(train_x), dtype=torch.float32)
+            train_y_tensor = torch.tensor(train_y, dtype=torch.float32)
                 
-            val_x_tensor = torch.tensor(np.array(val_x), dtype=torch.float32, device=device)
-            val_y_tensor = torch.tensor(val_y, dtype=torch.float32, device=device)
+            val_x_tensor = torch.tensor(np.array(val_x), dtype=torch.float32)
+            val_y_tensor = torch.tensor(val_y, dtype=torch.float32)
                 
-            test_x_tensor = torch.tensor(np.array(test_x), dtype=torch.float32, device=device)
-            test_y_tensor = torch.tensor(test_y, dtype=torch.float32, device=device)
-            test_y_true_tensor = torch.tensor(test_y_true, dtype=torch.long, device=device)
+            test_x_tensor = torch.tensor(np.array(test_x), dtype=torch.float32)
+            test_y_tensor = torch.tensor(test_y, dtype=torch.float32)
+            test_y_true_tensor = torch.tensor(test_y_true, dtype=torch.long)
                 
             train_dataset = TensorDataset(train_x_tensor, train_y_tensor)
             val_dataset = TensorDataset(val_x_tensor, val_y_tensor)
             test_dataset = TensorDataset(test_x_tensor, test_y_tensor, test_y_true_tensor)
                 
-            train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
-            val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False)
-            test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
+            train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, pin_memory=True, num_workers=8, persistent_workers=True)
+            val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False, pin_memory=True, num_workers=8, persistent_workers=True)
+            test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False, pin_memory=True, num_workers=8, persistent_workers=True)
 
             best_loop_val_loss = float('inf')
             
@@ -291,15 +291,14 @@ def cwola_train(df, pm_parameter='rotpmdec', dropout=0.2, k_folds=5, batch_size=
                 
                 for epoch in tqdm(range(epochs), desc='Epochs'):
                 
-                    # training
                     model.train()
                     total_train_loss = torch.tensor(0.0, device=device)
                     train_correct = torch.tensor(0.0, device=device)
                     counts = 0
                     
                     for inputs, region_labels in train_loader:
-                        inputs = inputs.to(device)
-                        region_labels = region_labels.to(device)
+                        inputs = inputs.to(device, non_blocking=True)
+                        region_labels = region_labels.to(device, non_blocking=True)
 
                         optimizer.zero_grad()
                         out = model(inputs).squeeze(1) # forward pass
@@ -322,8 +321,8 @@ def cwola_train(df, pm_parameter='rotpmdec', dropout=0.2, k_folds=5, batch_size=
                     counts = 0
                     with torch.no_grad():
                         for inputs, region_labels in val_loader:
-                            inputs = inputs.to(device)
-                            region_labels = region_labels.to(device)
+                            inputs = inputs.to(device, non_blocking=True)
+                            region_labels = region_labels.to(device, non_blocking=True)
                             
                             out = model(inputs).squeeze(1)
                             loss = loss_fn(out, region_labels)
@@ -371,8 +370,8 @@ def cwola_train(df, pm_parameter='rotpmdec', dropout=0.2, k_folds=5, batch_size=
             
             with torch.no_grad():
                 for inputs, region_labels, true_labels in test_loader:
-                    inputs = inputs.to(device)
-                    region_labels = region_labels.to(device)
+                    inputs = inputs.to(device, non_blocking=True)
+                    region_labels = region_labels.to(device, non_blocking=True)
                     out = model(inputs).squeeze()
                     raw_scores.extend(out.squeeze().cpu().numpy())
             
