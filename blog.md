@@ -34,4 +34,4 @@ As evidenced in the above plots, the middle, denser parts of the stream were ide
 It is clear that μ_λ outperformed μ_ϕcosλ in several patches, because although they are both localized features, the signal/sideband regions and input events are altered based on the choice of coordinate. On multiple occasions, the same stars between the two scans would result in different model assigned anomaly scores depending on the choice of proper motion parameter. The impact of coordinate choice is worth exploring more both in anomaly detection overall and within smaller subsections of data. Further exploration into the optimization of region scanning widths to increase the signal to background ratio, specifically for μ_ϕcosλ, should be studied for enhanced CWoLa performance relative to signal enriched ratios. 
 
 
-Author's Note: Thank you to Dr. Pettee at the University of Wisconsin for making this further exploration possible!
+**Author's Note:** Thank you to Dr. Pettee at the University of Wisconsin for making this further exploration possible!
