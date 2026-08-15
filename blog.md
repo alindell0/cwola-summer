@@ -1,6 +1,6 @@
 # CWoLa detects stellar streams with coordinate-dependent anomaly detection
 
-The machine learning technique Classification Without Labels evidences the power of anomaly detection in potentially unlabeled class mixtures. Following its [original development](https://link.springer.com/article/10.1007/JHEP10%282017%29174) in 2017 for application to the Large Hadron Collider, Dr. Mariel Pettee and her team produced the [first application of CWoLa to astronomical data](https://academic.oup.com/mnras/article/527/3/8459/7452899) in 2023 for the detection of stellar streams. Under her supervision, I explored the scientific reproducibility of their results and the impact of coordinate choice on the performance of CWoLa for anomaly detection.
+The machine learning technique **Classification Without Labels** evidences the power of **anomaly detection** in potentially unlabeled class mixtures. Following its [original development](https://link.springer.com/article/10.1007/JHEP10%282017%29174) in 2017 for application to the Large Hadron Collider, Dr. Mariel Pettee and her team produced the [first application of CWoLa to astronomical data](https://academic.oup.com/mnras/article/527/3/8459/7452899) in 2023 for the detection of stellar streams. Under her supervision, I explored the **scientific reproducibility** of their results and the **impact of coordinate choice** on the performance of CWoLa for anomaly detection.
 
 
 ### Why stellar streams?
