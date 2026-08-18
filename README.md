@@ -35,3 +35,4 @@ It is clear that μ_λ outperformed μ_ϕcosλ in several patches, because altho
 
 
 **Author's Note:** Thank you to Dr. Pettee at the University of Wisconsin for making this further exploration possible!
+
